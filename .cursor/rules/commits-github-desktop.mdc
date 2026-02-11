@@ -1,0 +1,16 @@
+---
+description: El usuario hace commits desde GitHub Desktop, no desde terminal
+alwaysApply: true
+---
+
+# Commits con GitHub Desktop
+
+El usuario realiza los commits desde **GitHub Desktop**, no desde la terminal.
+
+Cada vez que haya cambios listos para commitear:
+
+1. **Indicar** que hay cambios listos para commit
+2. **Proporcionar el mensaje de commit** sugerido para que lo use en GitHub Desktop
+3. Nunca ejecutar `git commit` desde terminal
+
+Ejemplo: "Listo para commit. Usá este mensaje en GitHub Desktop: `feat: agregar landing page con Next.js y Tailwind`"
