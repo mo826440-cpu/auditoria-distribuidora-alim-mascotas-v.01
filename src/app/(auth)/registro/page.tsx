@@ -32,7 +32,11 @@ export default function RegistroPage() {
       });
 
       if (error) {
-        setError(error.message);
+        const msg =
+          error.message === "Invalid API key"
+            ? "Clave API inválida. Verificá las variables en Vercel (Settings → Environment Variables), copiá la anon key de Supabase sin espacios, guardá y hacé Redeploy."
+            : error.message;
+        setError(msg);
         setLoading(false);
         return;
       }
