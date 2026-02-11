@@ -1,6 +1,43 @@
-import Link from "next/link";
+"use client";
 
-export default function LoginPage() {
+import { useState, Suspense } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+
+function LoginForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo") || "/dashboard";
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+
+      router.push(redirectTo);
+      router.refresh();
+    } catch {
+      setError("Error al iniciar sesión. Intentá de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-md space-y-8">
@@ -10,18 +47,78 @@ export default function LoginPage() {
             Accedé a tu cuenta de auditorías
           </p>
         </div>
-        <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-100">
-          <p className="text-slate-500 text-sm text-center">
-            Formulario de login en desarrollo (ETAPA 4)
-          </p>
-          <Link
-            href="/"
-            className="mt-6 block text-center text-primary-500 hover:text-primary-600 font-medium"
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-xl p-8 shadow-sm border border-slate-100 space-y-5"
+        >
+          {error && (
+            <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+              {error}
+            </div>
+          )}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@email.com"
+              required
+              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+              autoComplete="email"
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+              Contraseña
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Tu contraseña"
+              required
+              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+              autoComplete="current-password"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2.5 rounded-lg font-medium transition-colors"
           >
-            ← Volver al inicio
+            {loading ? "Ingresando..." : "Iniciar sesión"}
+          </button>
+        </form>
+        <p className="text-center text-slate-600 text-sm">
+          ¿No tenés cuenta?{" "}
+          <Link href="/registro" className="text-primary-500 hover:text-primary-600 font-medium">
+            Crear cuenta
           </Link>
-        </div>
+        </p>
+        <Link
+          href="/"
+          className="block text-center text-slate-500 hover:text-slate-700 text-sm"
+        >
+          ← Volver al inicio
+        </Link>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <p className="text-slate-500">Cargando...</p>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

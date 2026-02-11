@@ -53,7 +53,7 @@ App de Auditorías Comerciales para una distribuidora de alimentos para mascotas
 | 1 | Análisis y Estructura Base | ✅ Completada | |
 | 2 | Base de Datos (Supabase) | ✅ Completada | |
 | 3 | Landing Page + Vercel | ✅ Completada | |
-| 4 | Desarrollo del Sistema | ⏳ Pendiente | |
+| 4 | Desarrollo del Sistema | 🔄 En curso | Registro + Login ✓ |
 | 5 | Datos de Prueba | ⏳ Pendiente | |
 | 6 | Mejoras y Recomendaciones | ⏳ Pendiente | |
 
