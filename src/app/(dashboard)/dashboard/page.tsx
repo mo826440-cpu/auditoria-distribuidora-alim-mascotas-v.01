@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { EnsureProfile } from "@/components/features/EnsureProfile";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -14,6 +14,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-6">
+      <EnsureProfile />
       <div className="max-w-4xl mx-auto">
         <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
         <p className="mt-2 text-slate-600">

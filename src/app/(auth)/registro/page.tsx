@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -11,7 +11,15 @@ export default function RegistroPage() {
   const [nombre, setNombre] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [registroExitoso, setRegistroExitoso] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    if (registroExitoso) {
+      const timer = setTimeout(() => router.push("/login"), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [registroExitoso, router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +28,7 @@ export default function RegistroPage() {
 
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -41,13 +49,54 @@ export default function RegistroPage() {
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      if (data.user && data.session) {
+        const res = await fetch("/api/auth/complete-registration", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          setError(err.error || "Error al crear perfil");
+          setLoading(false);
+          return;
+        }
+      }
+
+      setRegistroExitoso(true);
     } catch {
       setError("Error al registrar. Intentá de nuevo.");
     } finally {
       setLoading(false);
     }
+  }
+
+  if (registroExitoso) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-100 text-center space-y-6">
+            <div className="w-12 h-12 mx-auto rounded-full bg-green-100 flex items-center justify-center">
+              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-slate-900">Cuenta creada</h2>
+            <p className="text-slate-600">
+              Revisá tu correo para confirmar tu cuenta. Luego podés iniciar sesión.
+            </p>
+            <p className="text-sm text-slate-500">
+              Serás redirigido al login en unos segundos...
+            </p>
+            <Link
+              href="/login"
+              className="inline-block w-full bg-primary-500 hover:bg-primary-600 text-white py-2.5 rounded-lg font-medium transition-colors"
+            >
+              Ir a iniciar sesión
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
