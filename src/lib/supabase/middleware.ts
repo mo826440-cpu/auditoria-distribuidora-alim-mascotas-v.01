@@ -30,7 +30,18 @@ export async function updateSession(request: NextRequest) {
   const isAuthRoute =
     request.nextUrl.pathname.startsWith("/login") ||
     request.nextUrl.pathname.startsWith("/registro");
-  const isDashboardRoute = request.nextUrl.pathname.startsWith("/dashboard");
+  const protectedPaths = [
+    "/dashboard",
+    "/usuarios",
+    "/clientes",
+    "/vendedores",
+    "/transportistas",
+    "/visitas",
+    "/auditorias",
+  ];
+  const isDashboardRoute =
+    request.nextUrl.pathname.startsWith("/dashboard") ||
+    protectedPaths.some((p) => request.nextUrl.pathname === p || request.nextUrl.pathname.startsWith(p + "/"));
 
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
