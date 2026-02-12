@@ -4,6 +4,20 @@
 
 ---
 
+## Página de creación de contraseña
+
+Cuando un usuario invita a alguien, el invitado recibe un correo. Al hacer clic en el link:
+
+1. Es redirigido a `/set-password`
+2. Ve un formulario para crear su contraseña
+3. Tras guardar, accede al dashboard
+
+**Importante:** Agregar en Supabase → Authentication → URL Configuration → Redirect URLs:
+- `https://tu-dominio.vercel.app/set-password`
+- `http://localhost:3000/set-password` (para desarrollo)
+
+---
+
 ## Funcionalidades
 
 - **Listado** de usuarios del comercio

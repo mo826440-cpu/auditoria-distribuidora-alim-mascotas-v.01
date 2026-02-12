@@ -59,7 +59,7 @@ export async function POST(request: Request) {
         rol,
         id_comercio: usuario.id_comercio,
       },
-      redirectTo: `${request.headers.get("origin") || "https://auditoria-distribuidora-alim-mascot-self.vercel.app"}/login`,
+      redirectTo: `${request.headers.get("origin") || "https://auditoria-distribuidora-alim-mascot-self.vercel.app"}/set-password`,
     }
   );
 
