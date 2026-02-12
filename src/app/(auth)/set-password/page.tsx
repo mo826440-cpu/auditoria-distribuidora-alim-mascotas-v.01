@@ -16,17 +16,40 @@ export default function SetPasswordPage() {
 
   useEffect(() => {
     const supabase = createClient();
+    const hasHash = typeof window !== "undefined" && window.location.hash?.includes("access_token");
+
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         setListo(true);
+        setEsperandoHash(false);
+        return;
+      }
+      if (!hasHash) {
+        setEsperandoHash(false);
+        return;
       }
       setEsperandoHash(false);
     };
-    checkSession();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+
+    const subscription = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) setListo(true);
-    });
+    }).data.subscription;
+
+    if (hasHash) {
+      const retries = [0, 500, 1000, 1500];
+      retries.forEach((delay) => {
+        setTimeout(async () => {
+          if (listo) return;
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) setListo(true);
+        }, delay);
+      });
+      setTimeout(() => setEsperandoHash(false), 2000);
+    } else {
+      checkSession();
+    }
+
     return () => subscription.unsubscribe();
   }, []);
 
