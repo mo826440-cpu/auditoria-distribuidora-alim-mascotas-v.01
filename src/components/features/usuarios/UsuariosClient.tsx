@@ -29,12 +29,16 @@ export function UsuariosClient({
   const [formEmail, setFormEmail] = useState("");
   const [formNombre, setFormNombre] = useState("");
   const [formRol, setFormRol] = useState("visitante");
+  const [formPassword, setFormPassword] = useState("");
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   function abrirNuevo() {
     setFormEmail("");
     setFormNombre("");
     setFormRol("visitante");
+    setFormPassword("");
     setError(null);
+    setSuccessMessage(null);
     setModal("nuevo");
   }
 
@@ -46,7 +50,7 @@ export function UsuariosClient({
     setModal("editar");
   }
 
-  async function handleInvitar(e: React.FormEvent) {
+  async function handleCrear(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);
@@ -54,14 +58,23 @@ export function UsuariosClient({
       const res = await fetch("/api/usuarios/invitar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formEmail, nombre: formNombre, rol: formRol }),
+        body: JSON.stringify({
+          email: formEmail,
+          nombre: formNombre,
+          rol: formRol,
+          password: formPassword,
+        }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al invitar");
-      setModal(null);
+      if (!res.ok) throw new Error(data.error || "Error al crear usuario");
+      setSuccessMessage(data.message || "Usuario creado. Se envió un correo para que valide su email.");
       router.refresh();
+      setTimeout(() => {
+        setModal(null);
+        setSuccessMessage(null);
+      }, 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al invitar");
+      setError(err instanceof Error ? err.message : "Error al crear usuario");
     } finally {
       setLoading(false);
     }
@@ -110,7 +123,7 @@ export function UsuariosClient({
         onClick={abrirNuevo}
         className="mb-4 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium"
       >
-        Invitar usuario
+        Crear usuario
       </button>
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -171,21 +184,14 @@ export function UsuariosClient({
       {modal === "nuevo" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-900">Invitar usuario</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Crear usuario</h2>
+            {successMessage && (
+              <div className="mt-2 p-3 rounded bg-green-50 text-green-700 text-sm">{successMessage}</div>
+            )}
             {error && (
               <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
             )}
-            <form onSubmit={handleInvitar} className="mt-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={formEmail}
-                  onChange={(e) => setFormEmail(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
-                />
-              </div>
+            <form onSubmit={handleCrear} className="mt-4 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
                 <input
@@ -193,6 +199,30 @@ export function UsuariosClient({
                   value={formNombre}
                   onChange={(e) => setFormNombre(e.target.value)}
                   required
+                  placeholder="Ej: Gabriel Ortiz"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={formEmail}
+                  onChange={(e) => setFormEmail(e.target.value)}
+                  required
+                  placeholder="Ej: ortiz_martinfsc@hotmail.com"
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
+                <input
+                  type="password"
+                  value={formPassword}
+                  onChange={(e) => setFormPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  placeholder="Mínimo 6 caracteres"
                   className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
@@ -209,7 +239,7 @@ export function UsuariosClient({
                 </select>
               </div>
               <p className="text-xs text-slate-500">
-                Se enviará un correo de invitación para que el usuario configure su contraseña.
+                El usuario quedará asignado al mismo comercio que tenés. Se enviará un correo para que valide su email.
               </p>
               <div className="flex gap-2 justify-end pt-2">
                 <button
@@ -224,7 +254,7 @@ export function UsuariosClient({
                   disabled={loading}
                   className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg disabled:opacity-50"
                 >
-                  {loading ? "Enviando..." : "Enviar invitación"}
+                  {loading ? "Creando..." : "Crear usuario"}
                 </button>
               </div>
             </form>

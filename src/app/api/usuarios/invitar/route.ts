@@ -37,11 +37,18 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { email, nombre, rol } = body;
+  const { email, nombre, rol, password } = body;
 
-  if (!email || !nombre || !rol) {
+  if (!email || !nombre || !rol || !password) {
     return NextResponse.json(
-      { error: "Faltan email, nombre o rol" },
+      { error: "Faltan email, nombre, rol o contraseña" },
+      { status: 400 }
+    );
+  }
+
+  if (password.length < 6) {
+    return NextResponse.json(
+      { error: "La contraseña debe tener al menos 6 caracteres" },
       { status: 400 }
     );
   }
@@ -51,25 +58,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Rol inválido" }, { status: 400 });
   }
 
-  const { data: inviteData, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+  const { data: createData, error } = await supabaseAdmin.auth.admin.createUser({
     email,
-    {
-      data: {
-        nombre,
-        rol,
-        id_comercio: usuario.id_comercio,
-      },
-      redirectTo: `${request.headers.get("origin") || "https://auditoria-distribuidora-alim-mascot-self.vercel.app"}/set-password`,
-    }
-  );
+    password,
+    email_confirm: false,
+    user_metadata: {
+      nombre,
+      rol,
+      id_comercio: usuario.id_comercio,
+    },
+  });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  if (inviteData.user) {
+  if (createData.user) {
     await supabaseAdmin.from("usuarios").insert({
-      id: inviteData.user.id,
+      id: createData.user.id,
       id_comercio: usuario.id_comercio,
       email,
       nombre,
@@ -77,5 +83,9 @@ export async function POST(request: Request) {
     });
   }
 
-  return NextResponse.json({ ok: true, user: inviteData.user });
+  return NextResponse.json({
+    ok: true,
+    user: createData.user,
+    message: "Usuario creado. Se envió un correo para que valide su email.",
+  });
 }
