@@ -2,27 +2,34 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
-  }
+    if (!user) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
 
-  const { data: usuario } = await supabase
-    .from("usuarios")
-    .select("id_comercio, rol")
-    .eq("id", user.id)
-    .single();
+    const { data: usuario } = await supabase
+      .from("usuarios")
+      .select("id_comercio, rol")
+      .eq("id", user.id)
+      .single();
 
-  if (!usuario || !["administrador", "auditor"].includes(usuario.rol)) {
-    return NextResponse.json({ error: "Sin permiso" }, { status: 403 });
-  }
+    if (!usuario || !["administrador", "auditor"].includes(usuario.rol)) {
+      return NextResponse.json({ error: "Sin permiso" }, { status: 403 });
+    }
 
-  const body = await request.json();
-  const {
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Cuerpo de la solicitud inválido" }, { status: 400 });
+    }
+
+    const {
     id_cliente,
     id_vendedor,
     id_visita,
@@ -53,16 +60,16 @@ export async function POST(request: Request) {
     clasificacion_cliente,
     firma_auditor,
     firma_responsable,
-  } = body;
+    } = body;
 
-  if (!id_cliente || !id_vendedor || !fecha) {
-    return NextResponse.json(
-      { error: "Cliente, vendedor y fecha son obligatorios" },
-      { status: 400 }
-    );
-  }
+    if (!id_cliente || !id_vendedor || !fecha) {
+      return NextResponse.json(
+        { error: "Cliente, vendedor y fecha son obligatorios" },
+        { status: 400 }
+      );
+    }
 
-  const { data, error } = await supabase
+    const { data, error } = await supabase
     .from("registro_auditoria")
     .insert({
       id_comercio: usuario.id_comercio,
@@ -101,9 +108,13 @@ export async function POST(request: Request) {
     .select("id")
     .single();
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
-  }
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
 
-  return NextResponse.json({ ok: true, id: data.id });
+    return NextResponse.json({ ok: true, id: data.id });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Error interno del servidor";
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }

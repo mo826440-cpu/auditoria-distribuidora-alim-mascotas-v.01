@@ -167,6 +167,10 @@ export function AuditoriasClient({
   async function handleCrear(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!clientes.length || !vendedores.length) {
+      setError("Debés tener al menos un cliente y un vendedor para crear una auditoría.");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/auditorias", {
@@ -174,8 +178,15 @@ export function AuditoriasClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildPayload()),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al crear auditoría");
+      let data: { error?: string } = {};
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(`Error del servidor (${res.status}). La respuesta no es válida.`);
+      }
+      if (!res.ok) {
+        throw new Error(data.error || `Error ${res.status} al crear auditoría`);
+      }
       setModal(null);
       router.refresh();
     } catch (err) {
@@ -196,8 +207,15 @@ export function AuditoriasClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildPayload()),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al guardar");
+      let data: { error?: string } = {};
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(`Error del servidor (${res.status}). La respuesta no es válida.`);
+      }
+      if (!res.ok) {
+        throw new Error(data.error || `Error ${res.status} al guardar`);
+      }
       setModal(null);
       router.refresh();
     } catch (err) {
@@ -316,8 +334,20 @@ export function AuditoriasClient({
             <h2 className="text-lg font-semibold text-slate-900">
               {modal === "nuevo" ? "Nueva auditoría" : "Editar auditoría"}
             </h2>
+            {!clientes.length && (
+              <div className="mt-2 p-3 rounded bg-amber-50 text-amber-800 text-sm">
+                No hay clientes. Creá al menos un cliente antes de registrar una auditoría.
+              </div>
+            )}
+            {!vendedores.length && (
+              <div className="mt-2 p-3 rounded bg-amber-50 text-amber-800 text-sm">
+                No hay vendedores. Creá al menos un vendedor antes de registrar una auditoría.
+              </div>
+            )}
             {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              <div className="mt-2 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
+                {error}
+              </div>
             )}
             <form
               onSubmit={modal === "nuevo" ? handleCrear : handleEditar}
@@ -576,7 +606,7 @@ export function AuditoriasClient({
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !clientes.length || !vendedores.length}
                   className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg disabled:opacity-50"
                 >
                   {loading ? "Guardando..." : modal === "nuevo" ? "Crear auditoría" : "Guardar"}
