@@ -70,7 +70,12 @@ export async function POST(request: Request) {
   });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    const mensaje =
+      error.message?.toLowerCase().includes("already been registered") ||
+      error.message?.toLowerCase().includes("already exists")
+        ? "Ya existe un usuario con ese email. Probá con otro correo o verificá si el usuario ya está en la lista."
+        : error.message;
+    return NextResponse.json({ error: mensaje }, { status: 400 });
   }
 
   if (createData.user) {
