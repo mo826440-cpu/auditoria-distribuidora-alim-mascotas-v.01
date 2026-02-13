@@ -61,7 +61,7 @@ export async function POST(request: Request) {
   const { data: createData, error } = await supabaseAdmin.auth.admin.createUser({
     email,
     password,
-    email_confirm: false,
+    email_confirm: true,
     user_metadata: {
       nombre,
       rol,
@@ -86,6 +86,6 @@ export async function POST(request: Request) {
   return NextResponse.json({
     ok: true,
     user: createData.user,
-    message: "Usuario creado. Se envió un correo para que valide su email.",
+    message: "Usuario creado. Ya puede iniciar sesión con su email y contraseña.",
   });
 }

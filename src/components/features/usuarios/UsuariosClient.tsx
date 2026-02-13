@@ -67,7 +67,7 @@ export function UsuariosClient({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al crear usuario");
-      setSuccessMessage(data.message || "Usuario creado. Se envió un correo para que valide su email.");
+      setSuccessMessage(data.message || "Usuario creado. Ya puede iniciar sesión con su email y contraseña.");
       router.refresh();
       setTimeout(() => {
         setModal(null);
@@ -239,7 +239,7 @@ export function UsuariosClient({
                 </select>
               </div>
               <p className="text-xs text-slate-500">
-                El usuario quedará asignado al mismo comercio que tenés. Se enviará un correo para que valide su email.
+                El usuario quedará asignado al mismo comercio que tenés. Podrá iniciar sesión de inmediato.
               </p>
               <div className="flex gap-2 justify-end pt-2">
                 <button
