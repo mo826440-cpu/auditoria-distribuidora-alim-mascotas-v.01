@@ -122,6 +122,32 @@ export function contenidoPdfVendedor(
   `;
 }
 
+export function contenidoPdfTransportista(
+  fechaHora: string,
+  nombre: string,
+  contacto: string,
+  email: string,
+  codigoInterno: string,
+  dni: string,
+  zonas: string,
+  residencia: string,
+  observaciones: string,
+  estado: string
+) {
+  return `
+    <h1>Detalle del Transportista Registrado (${esc(fechaHora)})</h1>
+    <div class="fila"><div class="etiqueta">Nombre</div><div class="valor">${esc(nombre)}</div></div>
+    <div class="fila"><div class="etiqueta">Contacto</div><div class="valor">${esc(contacto)}</div></div>
+    <div class="fila"><div class="etiqueta">Email</div><div class="valor">${esc(email || "—")}</div></div>
+    <div class="fila"><div class="etiqueta">Código Interno</div><div class="valor">${esc(codigoInterno)}</div></div>
+    <div class="fila"><div class="etiqueta">DNI</div><div class="valor">${esc(dni)}</div></div>
+    <div class="fila"><div class="etiqueta">Zona</div><div class="valor">${esc(zonas || "—")}</div></div>
+    <div class="fila"><div class="etiqueta">Residencia</div><div class="valor">${esc(residencia || "—")}</div></div>
+    <div class="fila"><div class="etiqueta">Observaciones</div><div class="valor">${esc(observaciones || "—")}</div></div>
+    <div class="fila"><div class="etiqueta">Estado</div><div class="valor">${esc(estado)}</div></div>
+  `;
+}
+
 export function contenidoPdfTransporte(
   fechaHora: string,
   tipo: string,

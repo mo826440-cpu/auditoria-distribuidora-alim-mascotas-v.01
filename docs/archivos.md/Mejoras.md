@@ -194,6 +194,63 @@ Módulo de Vendedores:
 
 
 
+
+Módulo de Transportistas:
+
+- El formulario para Cargar nuevos registros quiero que se implemente de la siguiente forma:
+
+            1° Campo Fecha de registro: Siempre debe mostrar la fecha actual, sin posibilidad de modificar.
+            2° Campo Nombre Transportista: Campo obligatorio de texto corto (Ej, Hasta 100 posiciones).
+            3° Campo Contacto: Campo obligatorio de formató E.164 para contacto de celular (Ej: + [código país] [código área] [número], +5493511234567)
+            4° Campo email: Campo opcional con formato tipo email. 
+            5° Campo Código Interno: Campo obligatorio de texto corto que solo permita números y guiones (-). que no permita espacios ni símbolos o caracteres raros. Este campo debe ser único, no se debe repetir en más de un registro.
+            6° Campo DNI: Campo obligatorio con el formato número entero que si o si debe contener 8 números, ni más, ni menos. Automaticamente se deben mostrar con siguiente formato: Primeros 2 números + un punto + Siguentes 3 números + un punto + últimos 3 números. Ej, 35.145.907. Este campo debe ser único, no se debe repetir en más de un registro.
+            7° Campo Zona: Me debe mostrar una lista desplegable con opciones relacionadas con los registros que aparecen en la columna 2 (Zona) de la tabla de Registros de zonas ubicada en el submódulo Zonas. Me debe permitir cargar más de una zona.
+            9° Campo Residencia: Campo opcional de texto Corto (100 posiciones), que permita cargar letras, numeros, espacios, acentos, puntos y comas.
+            10° Campo Observaciones: Campo opcional de texto largo.
+            11° Campo Estado: (Activo/Inactivo), Por defecto este campo debe cargarse como estado Activo.
+            12° Botón de cancelar: Debe cancelar el registro limpiando los campos cargados y cerrando el formulario.
+            13° Botón de Registrar: Debe mostrar un mensaje de aceptar registro de datos y al dar Aceptar, se deben registrar todos los datos cargados.
+
+            NOTA: Implementar mensajes/notificaciones de error y/o advertencias en caso de datos incorrectos o incumplimientos de funciones.
+
+- Tabla para mostrar registros cargados:
+         1° Columna = Código: Debe mostrar el dato registrado en el campo Código Interno.
+         2° Columna = Transportista: Debe mostrar el dato registrado en el campo Nombre Transportista.
+         3° Columna = Contacto: Debe mostrar el registro cargado desde el campo Contacto.
+         4° Columna = Recidencia: Debe mostrar un ícono que me redirija a la ubicación registrada en el campo Residencia.
+         5° Columna = Estado: Debe mostrar el dato cargado en el campo Estado.
+         6° Columna = Acciones: Debe mostrar los siguientes íconos con sus funciones:
+
+                      # Ícono Editar: Debe mostrar el fórmulario para editar los datos registrados.
+                      # Ícono Eliminar: Para eliminar completamente un registro cargado.
+                      # Ícono Ver Detalle: Me debe mostrar la opción de descargar un pdf mostrandome los detalles de la siguiente forma:
+
+                     Fila 1: Título del detalle, ejemplo: Detalle del Transportista Registrado + (Fecha y hora de registro).
+                     Fila 2: Nombre.
+                     Fila 3: Contacto.
+                     Fila 4: email.
+                     Fila 5: Código Interno.
+                     Fila 6: DNI.
+                     Fila 7: Zona.
+                     Fila 8: Residencia.
+                     Fila 9: Observaciones.                     
+                     Fila 10: Estado.
+                     Pie de página: usuario que registró este transporte y número de página. 
+                      # Antes de aplicar la edición o eliminación de registros, quiero que me muestre un mensaje de aceptación.
+            
+- Quiero que realices la implementación de estos cambios de la siguiente forma:
+
+    1° - Pasame un resumen de lo que entendiste y de cómo lo vas a implementar.
+    2° - Verifica la estructura necesaria a implementar/actualizar en la base de datos y pasame los scripts para ejecutarlas.
+    3° - Realizar la implementación de los nuevos cambios.
+    4° - Verificar funcionamiento y diseños correctos de lo implementado.
+    5° - Aplicar correcciones (en caso de ser necesario).
+    6° - Una vez declarado el correcto funcionamiento pasaríamos a implementar modificaciones en otros módulos.
+
+
+
+
        
 
 Módulo de Visitas: 
