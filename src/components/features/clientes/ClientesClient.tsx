@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { PROVINCIAS_ARGENTINA } from "@/data/provinciasArgentina";
 import { imprimirComoPdf, contenidoPdfCliente } from "@/lib/pdfUtils";
@@ -94,9 +94,16 @@ export function ClientesClient({
     ? (zonas.find((z) => z.id === formZona)?.localidades ?? [])
     : [];
 
+  const refContacto = useRef<HTMLInputElement>(null);
+  const refCodigo = useRef<HTMLInputElement>(null);
+  const refZona = useRef<HTMLSelectElement>(null);
+  const refLocalidad = useRef<HTMLSelectElement>(null);
+  const refProvincia = useRef<HTMLSelectElement>(null);
+  const refCalle = useRef<HTMLInputElement>(null);
+
   function abrirNuevo() {
     setFormNombreRep("");
-    setFormContacto("");
+    setFormContacto("+54");
     setFormEmail("");
     setFormCodigo("");
     setFormNombre("");
@@ -281,8 +288,11 @@ export function ClientesClient({
     minute: "2-digit",
   });
 
-  const Formulario = ({ onSubmit }: { onSubmit: (e: React.FormEvent) => void }) => (
-    <form onSubmit={onSubmit} className="mt-4 space-y-4 max-h-[calc(100vh-8rem)] overflow-y-auto pr-2">
+  const isNuevo = modal === "nuevo";
+  const handleSubmit = isNuevo ? handleCrear : handleEditar;
+
+  const formContent = (
+    <>
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">Fecha de registro</label>
         <input
@@ -307,6 +317,7 @@ export function ClientesClient({
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">Contacto * (E.164)</label>
         <input
+          ref={refContacto}
           type="tel"
           value={formContacto}
           onChange={(e) => setFormContacto(e.target.value)}
@@ -328,14 +339,13 @@ export function ClientesClient({
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">Código Interno *</label>
         <input
+          ref={refCodigo}
           type="text"
+          inputMode="numeric"
           value={formCodigo}
-          onChange={(e) => {
-            const v = e.target.value.replace(/[^0-9\-]/g, "");
-            setFormCodigo(v);
-          }}
+          onChange={(e) => setFormCodigo(e.target.value.replace(/[^0-9\-]/g, ""))}
           required
-          placeholder="Solo números y guiones"
+          placeholder="Solo números y guiones (ej: 001-2024)"
           className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
@@ -366,10 +376,12 @@ export function ClientesClient({
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">Zona</label>
         <select
+          ref={refZona}
           value={formZona}
           onChange={(e) => {
             setFormZona(e.target.value);
             setFormLocalidad("");
+            setTimeout(() => refLocalidad.current?.focus(), 0);
           }}
           className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
         >
@@ -384,8 +396,12 @@ export function ClientesClient({
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">Localidad/Ciudad</label>
         <select
+          ref={refLocalidad}
           value={formLocalidad}
-          onChange={(e) => setFormLocalidad(e.target.value)}
+          onChange={(e) => {
+            setFormLocalidad(e.target.value);
+            setTimeout(() => refProvincia.current?.focus(), 0);
+          }}
           className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
         >
           <option value="">— Seleccionar —</option>
@@ -399,8 +415,12 @@ export function ClientesClient({
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">Provincia</label>
         <select
+          ref={refProvincia}
           value={formProvincia}
-          onChange={(e) => setFormProvincia(e.target.value)}
+          onChange={(e) => {
+            setFormProvincia(e.target.value);
+            setTimeout(() => refCalle.current?.focus(), 0);
+          }}
           className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
         >
           {PROVINCIAS_ARGENTINA.map((p) => (
@@ -413,6 +433,7 @@ export function ClientesClient({
       <div>
         <label className="block text-sm font-medium text-slate-700 mb-1">Calle *</label>
         <input
+          ref={refCalle}
           type="text"
           value={formCalle}
           onChange={(e) => setFormCalle(e.target.value.slice(0, 100))}
@@ -445,32 +466,16 @@ export function ClientesClient({
       <div className="flex items-center gap-2">
         <input
           type="checkbox"
-          id="activo"
+          id="activo-form"
           checked={formActivo}
           onChange={(e) => setFormActivo(e.target.checked)}
           className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
         />
-        <label htmlFor="activo" className="text-sm font-medium text-slate-700">
+        <label htmlFor="activo-form" className="text-sm font-medium text-slate-700">
           Estado Activo
         </label>
       </div>
-      <div className="flex gap-2 justify-end pt-2">
-        <button
-          type="button"
-          onClick={() => setModal(null)}
-          className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg disabled:opacity-50"
-        >
-          {loading ? "Guardando..." : "Registrar"}
-        </button>
-      </div>
-    </form>
+    </>
   );
 
   return (
@@ -588,26 +593,41 @@ export function ClientesClient({
         </div>
       </div>
 
-      {modal === "nuevo" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-hidden">
-            <h2 className="text-lg font-semibold text-slate-900">Crear cliente</h2>
-            {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
-            )}
-            <Formulario onSubmit={handleCrear} />
-          </div>
-        </div>
-      )}
-
-      {modal === "editar" && clienteEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-hidden">
-            <h2 className="text-lg font-semibold text-slate-900">Editar cliente</h2>
-            {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
-            )}
-            <Formulario onSubmit={handleEditar} />
+      {(modal === "nuevo" || modal === "editar") && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col max-h-[85vh]">
+            <div className="flex-shrink-0 px-6 pt-6 pb-2">
+              <h2 className="text-lg font-semibold text-slate-900">
+                {modal === "nuevo" ? "Crear cliente" : "Editar cliente"}
+              </h2>
+              {error && (
+                <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              )}
+            </div>
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col flex-1 min-h-0 overflow-hidden"
+            >
+              <div className="flex-1 overflow-y-auto px-6 py-2 space-y-4 min-h-0">
+                {formContent}
+              </div>
+              <div className="flex-shrink-0 flex gap-2 justify-end px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-xl">
+                <button
+                  type="button"
+                  onClick={() => setModal(null)}
+                  className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg disabled:opacity-50"
+                >
+                  {loading ? "Guardando..." : "Registrar"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
