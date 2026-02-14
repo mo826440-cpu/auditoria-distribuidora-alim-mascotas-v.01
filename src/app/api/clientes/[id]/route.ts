@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 const E164_REGEX = /^\+[1-9]\d{6,14}$/;
@@ -17,7 +18,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -84,14 +85,18 @@ export async function PATCH(
     const v = String(codigo_interno).trim();
     if (!v) return NextResponse.json({ error: "Código interno obligatorio" }, { status: 400 });
     if (!CODIGO_INTERNO_REGEX.test(v)) return NextResponse.json({ error: "Código: solo números y guiones" }, { status: 400 });
-    const { data: dup } = await supabase
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseCheck = serviceRoleKey
+      ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey, { auth: { persistSession: false } })
+      : supabase;
+    const { data: dupList } = await supabaseCheck
       .from("clientes")
       .select("id")
       .eq("id_comercio", miUsuario.id_comercio)
       .eq("codigo_interno", v)
       .neq("id", id)
-      .maybeSingle();
-    if (dup) return NextResponse.json({ error: "Código interno ya existe" }, { status: 400 });
+      .limit(1);
+    if (dupList && dupList.length > 0) return NextResponse.json({ error: "Ya existe un cliente con ese código interno" }, { status: 400 });
     updates.codigo_interno = v;
   }
   if (nombre !== undefined) {
@@ -104,14 +109,18 @@ export async function PATCH(
     const v = String(cuit).replace(/\s/g, "");
     if (!v) return NextResponse.json({ error: "CUIT obligatorio" }, { status: 400 });
     if (!validarCuit(v)) return NextResponse.json({ error: "CUIT formato XX-XXXXXXXX-X" }, { status: 400 });
-    const { data: dupCuit } = await supabase
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseCheck = serviceRoleKey
+      ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey, { auth: { persistSession: false } })
+      : supabase;
+    const { data: dupCuitList } = await supabaseCheck
       .from("clientes")
       .select("id")
       .eq("id_comercio", miUsuario.id_comercio)
       .eq("cuit", v)
       .neq("id", id)
-      .maybeSingle();
-    if (dupCuit) return NextResponse.json({ error: "Ya existe un cliente con ese CUIT" }, { status: 400 });
+      .limit(1);
+    if (dupCuitList && dupCuitList.length > 0) return NextResponse.json({ error: "Ya existe un cliente con ese CUIT" }, { status: 400 });
     updates.cuit = v;
   }
   if (id_zona !== undefined) updates.id_zona = id_zona || null;
@@ -136,7 +145,15 @@ export async function PATCH(
   const { error } = await supabase.from("clientes").update(updates).eq("id", id);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    const msg =
+      error.code === "23505"
+        ? error.message.includes("codigo_interno")
+          ? "Ya existe un cliente con ese código interno"
+          : error.message.includes("cuit")
+            ? "Ya existe un cliente con ese CUIT"
+            : error.message
+        : error.message;
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true });
@@ -147,7 +164,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

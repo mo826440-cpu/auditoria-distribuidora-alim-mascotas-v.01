@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import { createClient as createServerClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
 const E164_REGEX = /^\+[1-9]\d{6,14}$/;
@@ -13,7 +14,7 @@ function validarCuit(cuit: string): boolean {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
+  const supabase = await createServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -116,25 +117,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Email con formato inválido" }, { status: 400 });
   }
 
-  const { data: dupCodigo } = await supabase
+  // Verificar duplicados con cliente admin (bypass RLS) para asegurar que no se pierdan registros
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseAdmin = serviceRoleKey
+    ? createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        serviceRoleKey,
+        { auth: { persistSession: false } }
+      )
+    : supabase;
+
+  const { data: dupCodigoList } = await supabaseAdmin
     .from("clientes")
     .select("id")
     .eq("id_comercio", usuario.id_comercio)
     .eq("codigo_interno", codigoStr)
-    .maybeSingle();
+    .limit(1);
 
-  if (dupCodigo) {
+  if (dupCodigoList && dupCodigoList.length > 0) {
     return NextResponse.json({ error: "Ya existe un cliente con ese código interno" }, { status: 400 });
   }
 
-  const { data: dupCuit } = await supabase
+  const { data: dupCuitList } = await supabaseAdmin
     .from("clientes")
     .select("id")
     .eq("id_comercio", usuario.id_comercio)
     .eq("cuit", cuitStr)
-    .maybeSingle();
+    .limit(1);
 
-  if (dupCuit) {
+  if (dupCuitList && dupCuitList.length > 0) {
     return NextResponse.json({ error: "Ya existe un cliente con ese CUIT" }, { status: 400 });
   }
 
@@ -161,7 +172,16 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    // Código 23505 = violación de unicidad (por si la verificación previa no la detectó)
+    const msg =
+      error.code === "23505"
+        ? error.message.includes("codigo_interno")
+          ? "Ya existe un cliente con ese código interno"
+          : error.message.includes("cuit")
+            ? "Ya existe un cliente con ese CUIT"
+            : error.message
+        : error.message;
+    return NextResponse.json({ error: msg }, { status: 400 });
   }
 
   return NextResponse.json({ ok: true, id: data.id });
