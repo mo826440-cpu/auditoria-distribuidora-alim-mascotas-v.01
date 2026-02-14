@@ -21,11 +21,23 @@ type Auditoria = {
   rotacion_productos?: number | null;
   cumple_plazos_pago?: boolean | null;
   metodos_pago_frecuentes?: string[] | null;
+  frecuencia_envios?: string | null;
+  promedio_kg_mes?: string | null;
+  monto_compra_mes?: string | null;
   puntuacion_cliente: number | null;
   puntuacion_vendedor: number | null;
   puntuacion_repartidor: number | null;
   clasificacion_cliente: string | null;
-  condiciones_generales?: { observaciones?: string } | null;
+  condiciones_generales?: Record<string, unknown> | null;
+  exhibicion_productos?: Record<string, unknown> | null;
+  stock_rotacion?: Record<string, unknown> | null;
+  precios_comercializacion?: Record<string, unknown> | null;
+  relacion_distribuidora?: Record<string, unknown> | null;
+  gestion_comercial?: Record<string, unknown> | null;
+  conocimiento_producto?: Record<string, unknown> | null;
+  relacion_cliente?: Record<string, unknown> | null;
+  cumplimiento_administrativo?: Record<string, unknown> | null;
+  logistica_servicio?: Record<string, unknown> | null;
   clientes: { nombre: string } | null;
   vendedores: { nombre: string } | null;
 };
@@ -46,6 +58,35 @@ const METODOS_PAGO = [
   { value: "cheque_30", label: "Cheque 30 días" },
   { value: "cheque_90", label: "Cheque 90 días" },
   { value: "otro", label: "Otro" },
+];
+
+const FRECUENCIA_ENVIOS = [
+  { value: "menos_1_mes", label: "Menos de 1 mes" },
+  { value: "1_a_3_mes", label: "1 a 3 meses" },
+  { value: "3_a_4_mes", label: "3 a 4 meses" },
+  { value: "4_a_5_mes", label: "4 a 5 meses" },
+  { value: "mas_5_mes", label: "Más de 5 meses" },
+];
+
+const PROMEDIO_KG_MES = [
+  { value: "menos_1000", label: "Menos de 1000 kg" },
+  { value: "1000_2000", label: "1000-2000 kg" },
+  { value: "2000_3000", label: "2000-3000 kg" },
+  { value: "3000_4000", label: "3000-4000 kg" },
+  { value: "4000_5000", label: "4000-5000 kg" },
+  { value: "5000_6000", label: "5000-6000 kg" },
+  { value: "6000_7000", label: "6000-7000 kg" },
+  { value: "7000_8000", label: "7000-8000 kg" },
+  { value: "mas_8000", label: "Más de 8000 kg" },
+];
+
+const MONTO_COMPRA_MES = [
+  { value: "menos_1M", label: "Menos de 1M" },
+  { value: "1M_2M", label: "1M - 2M" },
+  { value: "2M_3M", label: "2M - 3M" },
+  { value: "3M_4M", label: "3M - 4M" },
+  { value: "4M_5M", label: "4M - 5M" },
+  { value: "mas_5M", label: "Más de 5M" },
 ];
 
 export function AuditoriasClient({
@@ -89,6 +130,26 @@ export function AuditoriasClient({
   const [formPuntuacionRepartidor, setFormPuntuacionRepartidor] = useState("");
   const [formClasificacion, setFormClasificacion] = useState("");
   const [formObservaciones, setFormObservaciones] = useState("");
+  const [formFrecuenciaEnvios, setFormFrecuenciaEnvios] = useState("");
+  const [formPromedioKg, setFormPromedioKg] = useState("");
+  const [formMontoCompra, setFormMontoCompra] = useState("");
+  const [formCondicionesLocal, setFormCondicionesLocal] = useState("");
+  const [formCondicionesIluminacion, setFormCondicionesIluminacion] = useState("");
+  const [formCondicionesSector, setFormCondicionesSector] = useState("");
+  const [formCondicionesHigiene, setFormCondicionesHigiene] = useState("");
+  const [formExhibicionVisible, setFormExhibicionVisible] = useState("");
+  const [formExhibicionUbicacion, setFormExhibicionUbicacion] = useState("");
+  const [formExhibicionCarteleria, setFormExhibicionCarteleria] = useState("");
+  const [formExhibicionComparacion, setFormExhibicionComparacion] = useState("");
+  const [formExhibicionObs, setFormExhibicionObs] = useState("");
+  const [formStockObs, setFormStockObs] = useState("");
+  const [formPreciosObs, setFormPreciosObs] = useState("");
+  const [formRelacionObs, setFormRelacionObs] = useState("");
+  const [formGestionObs, setFormGestionObs] = useState("");
+  const [formConocimientoObs, setFormConocimientoObs] = useState("");
+  const [formRelacionClienteObs, setFormRelacionClienteObs] = useState("");
+  const [formCumplimientoObs, setFormCumplimientoObs] = useState("");
+  const [formLogisticaObs, setFormLogisticaObs] = useState("");
 
   function abrirNuevo() {
     setFormCliente("");
@@ -107,6 +168,26 @@ export function AuditoriasClient({
     setFormPuntuacionRepartidor("");
     setFormClasificacion("");
     setFormObservaciones("");
+    setFormFrecuenciaEnvios("");
+    setFormPromedioKg("");
+    setFormMontoCompra("");
+    setFormCondicionesLocal("");
+    setFormCondicionesIluminacion("");
+    setFormCondicionesSector("");
+    setFormCondicionesHigiene("");
+    setFormExhibicionVisible("");
+    setFormExhibicionUbicacion("");
+    setFormExhibicionCarteleria("");
+    setFormExhibicionComparacion("");
+    setFormExhibicionObs("");
+    setFormStockObs("");
+    setFormPreciosObs("");
+    setFormRelacionObs("");
+    setFormGestionObs("");
+    setFormConocimientoObs("");
+    setFormRelacionClienteObs("");
+    setFormCumplimientoObs("");
+    setFormLogisticaObs("");
     setError(null);
     setAuditoriaEdit(null);
     setModal("nuevo");
@@ -129,7 +210,29 @@ export function AuditoriasClient({
     setFormPuntuacionVendedor(a.puntuacion_vendedor?.toString() ?? "");
     setFormPuntuacionRepartidor(a.puntuacion_repartidor?.toString() ?? "");
     setFormClasificacion(a.clasificacion_cliente ?? "");
-    setFormObservaciones(a.condiciones_generales?.observaciones ?? "");
+    setFormObservaciones((a.condiciones_generales as { observaciones?: string })?.observaciones ?? "");
+    setFormFrecuenciaEnvios(a.frecuencia_envios ?? "");
+    setFormPromedioKg(a.promedio_kg_mes ?? "");
+    setFormMontoCompra(a.monto_compra_mes ?? "");
+    const cg = a.condiciones_generales as Record<string, unknown> | undefined;
+    setFormCondicionesLocal(String(cg?.local_limpio ?? ""));
+    setFormCondicionesIluminacion(String(cg?.buena_iluminacion ?? ""));
+    setFormCondicionesSector(String(cg?.sector_mascotas_identificado ?? ""));
+    setFormCondicionesHigiene(String(cg?.cumple_normas_higiene ?? ""));
+    const ep = a.exhibicion_productos as Record<string, unknown> | undefined;
+    setFormExhibicionVisible(String(ep?.productos_visibles ?? ""));
+    setFormExhibicionUbicacion(String(ep?.ubicacion_estrategica ?? ""));
+    setFormExhibicionCarteleria(String(ep?.carteleria ?? ""));
+    setFormExhibicionComparacion(String(ep?.comparacion_competencia ?? ""));
+    setFormExhibicionObs(String(ep?.observaciones ?? ""));
+    setFormStockObs(String((a.stock_rotacion as Record<string, unknown>)?.observaciones ?? ""));
+    setFormPreciosObs(String((a.precios_comercializacion as Record<string, unknown>)?.observaciones ?? ""));
+    setFormRelacionObs(String((a.relacion_distribuidora as Record<string, unknown>)?.observaciones ?? ""));
+    setFormGestionObs(String((a.gestion_comercial as Record<string, unknown>)?.observaciones ?? ""));
+    setFormConocimientoObs(String((a.conocimiento_producto as Record<string, unknown>)?.observaciones ?? ""));
+    setFormRelacionClienteObs(String((a.relacion_cliente as Record<string, unknown>)?.observaciones ?? ""));
+    setFormCumplimientoObs(String((a.cumplimiento_administrativo as Record<string, unknown>)?.observaciones ?? ""));
+    setFormLogisticaObs(String((a.logistica_servicio as Record<string, unknown>)?.observaciones ?? ""));
     setError(null);
     setModal("editar");
   }
@@ -157,10 +260,36 @@ export function AuditoriasClient({
       rotacion_productos: formRotacion ? parseInt(formRotacion, 10) : null,
       cumple_plazos_pago: formPlazosPago,
       metodos_pago_frecuentes: formMetodosPago.length ? formMetodosPago : null,
+      frecuencia_envios: formFrecuenciaEnvios || null,
+      promedio_kg_mes: formPromedioKg || null,
+      monto_compra_mes: formMontoCompra || null,
     };
-    if (formObservaciones.trim()) {
-      payload.condiciones_generales = { observaciones: formObservaciones.trim() };
-    }
+
+    const condiciones: Record<string, unknown> = {};
+    if (formObservaciones.trim()) condiciones.observaciones = formObservaciones.trim();
+    if (formCondicionesLocal) condiciones.local_limpio = parseInt(formCondicionesLocal, 10);
+    if (formCondicionesIluminacion) condiciones.buena_iluminacion = parseInt(formCondicionesIluminacion, 10);
+    if (formCondicionesSector) condiciones.sector_mascotas_identificado = parseInt(formCondicionesSector, 10);
+    if (formCondicionesHigiene) condiciones.cumple_normas_higiene = parseInt(formCondicionesHigiene, 10);
+    if (Object.keys(condiciones).length) payload.condiciones_generales = condiciones;
+
+    const exhibicion: Record<string, unknown> = {};
+    if (formExhibicionVisible) exhibicion.productos_visibles = parseInt(formExhibicionVisible, 10);
+    if (formExhibicionUbicacion) exhibicion.ubicacion_estrategica = parseInt(formExhibicionUbicacion, 10);
+    if (formExhibicionCarteleria) exhibicion.carteleria = parseInt(formExhibicionCarteleria, 10);
+    if (formExhibicionComparacion) exhibicion.comparacion_competencia = formExhibicionComparacion;
+    if (formExhibicionObs.trim()) exhibicion.observaciones = formExhibicionObs.trim();
+    if (Object.keys(exhibicion).length) payload.exhibicion_productos = exhibicion;
+
+    if (formStockObs.trim()) payload.stock_rotacion = { observaciones: formStockObs.trim() };
+    if (formPreciosObs.trim()) payload.precios_comercializacion = { observaciones: formPreciosObs.trim() };
+    if (formRelacionObs.trim()) payload.relacion_distribuidora = { observaciones: formRelacionObs.trim() };
+    if (formGestionObs.trim()) payload.gestion_comercial = { observaciones: formGestionObs.trim() };
+    if (formConocimientoObs.trim()) payload.conocimiento_producto = { observaciones: formConocimientoObs.trim() };
+    if (formRelacionClienteObs.trim()) payload.relacion_cliente = { observaciones: formRelacionClienteObs.trim() };
+    if (formCumplimientoObs.trim()) payload.cumplimiento_administrativo = { observaciones: formCumplimientoObs.trim() };
+    if (formLogisticaObs.trim()) payload.logistica_servicio = { observaciones: formLogisticaObs.trim() };
+
     return payload;
   }
 
@@ -329,8 +458,8 @@ export function AuditoriasClient({
 
       {/* Modal Nuevo / Editar */}
       {(modal === "nuevo" || modal === "editar") && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 overflow-y-auto py-8">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-xl my-8">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 overflow-y-auto py-6 px-4">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-xl my-2 max-h-[calc(100vh-3rem)] overflow-y-auto">
             <h2 className="text-lg font-semibold text-slate-900">
               {modal === "nuevo" ? "Nueva auditoría" : "Editar auditoría"}
             </h2>
@@ -520,6 +649,175 @@ export function AuditoriasClient({
                         </button>
                       ))}
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Frecuencia envíos</label>
+                    <select
+                      value={formFrecuenciaEnvios}
+                      onChange={(e) => setFormFrecuenciaEnvios(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                    >
+                      <option value="">—</option>
+                      {FRECUENCIA_ENVIOS.map((f) => (
+                        <option key={f.value} value={f.value}>{f.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Promedio kg/mes</label>
+                    <select
+                      value={formPromedioKg}
+                      onChange={(e) => setFormPromedioKg(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                    >
+                      <option value="">—</option>
+                      {PROMEDIO_KG_MES.map((p) => (
+                        <option key={p.value} value={p.value}>{p.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Monto compra/mes</label>
+                    <select
+                      value={formMontoCompra}
+                      onChange={(e) => setFormMontoCompra(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                    >
+                      <option value="">—</option>
+                      {MONTO_COMPRA_MES.map((m) => (
+                        <option key={m.value} value={m.value}>{m.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Condiciones generales del local */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide">
+                  Condiciones generales del local (1-5)
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Local limpio</label>
+                    <select value={formCondicionesLocal} onChange={(e) => setFormCondicionesLocal(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                      <option value="">—</option>
+                      {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Iluminación</label>
+                    <select value={formCondicionesIluminacion} onChange={(e) => setFormCondicionesIluminacion(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                      <option value="">—</option>
+                      {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Sector mascotas</label>
+                    <select value={formCondicionesSector} onChange={(e) => setFormCondicionesSector(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                      <option value="">—</option>
+                      {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Normas higiene</label>
+                    <select value={formCondicionesHigiene} onChange={(e) => setFormCondicionesHigiene(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                      <option value="">—</option>
+                      {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Exhibición de productos */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide">
+                  Exhibición de productos (1-5)
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Productos visibles</label>
+                    <select value={formExhibicionVisible} onChange={(e) => setFormExhibicionVisible(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                      <option value="">—</option>
+                      {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Ubicación estratégica</label>
+                    <select value={formExhibicionUbicacion} onChange={(e) => setFormExhibicionUbicacion(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                      <option value="">—</option>
+                      {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Cartelería</label>
+                    <select value={formExhibicionCarteleria} onChange={(e) => setFormExhibicionCarteleria(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                      <option value="">—</option>
+                      {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Vs. competencia</label>
+                    <select value={formExhibicionComparacion} onChange={(e) => setFormExhibicionComparacion(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                      <option value="">—</option>
+                      <option value="mejor">Mejor</option>
+                      <option value="igual">Igual</option>
+                      <option value="peor">Peor</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones exhibición</label>
+                  <textarea value={formExhibicionObs} onChange={(e) => setFormExhibicionObs(e.target.value)} rows={2} placeholder="..." className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                </div>
+              </div>
+
+              {/* Stock, precios, relación */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide">
+                  Stock, precios y relación
+                </h3>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones stock y rotación</label>
+                    <textarea value={formStockObs} onChange={(e) => setFormStockObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones precios y comercialización</label>
+                    <textarea value={formPreciosObs} onChange={(e) => setFormPreciosObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones relación con distribuidora</label>
+                    <textarea value={formRelacionObs} onChange={(e) => setFormRelacionObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Auditoría del vendedor */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide">
+                  Auditoría del vendedor
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Gestión comercial</label>
+                    <textarea value={formGestionObs} onChange={(e) => setFormGestionObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Conocimiento del producto</label>
+                    <textarea value={formConocimientoObs} onChange={(e) => setFormConocimientoObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Relación con cliente</label>
+                    <textarea value={formRelacionClienteObs} onChange={(e) => setFormRelacionClienteObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Cumplimiento administrativo</label>
+                    <textarea value={formCumplimientoObs} onChange={(e) => setFormCumplimientoObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Logística y servicio</label>
+                    <textarea value={formLogisticaObs} onChange={(e) => setFormLogisticaObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
                   </div>
                 </div>
               </div>
