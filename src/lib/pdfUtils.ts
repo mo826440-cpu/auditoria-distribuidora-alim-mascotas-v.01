@@ -62,6 +62,40 @@ export function contenidoPdfZona(
   `;
 }
 
+export function contenidoPdfCliente(
+  fechaHora: string,
+  nombreRepresentante: string,
+  contacto: string,
+  email: string,
+  codigoInterno: string,
+  nombreComercio: string,
+  cuit: string,
+  zona: string,
+  localidad: string,
+  provincia: string,
+  calle: string,
+  numero: number,
+  observaciones: string,
+  estado: string
+) {
+  return `
+    <h1>Detalle de Cliente Registrado (${esc(fechaHora)})</h1>
+    <div class="fila"><div class="etiqueta">Nombre Representante</div><div class="valor">${esc(nombreRepresentante)}</div></div>
+    <div class="fila"><div class="etiqueta">Contacto</div><div class="valor">${esc(contacto)}</div></div>
+    <div class="fila"><div class="etiqueta">Email</div><div class="valor">${esc(email || "—")}</div></div>
+    <div class="fila"><div class="etiqueta">Código Interno</div><div class="valor">${esc(codigoInterno)}</div></div>
+    <div class="fila"><div class="etiqueta">Nombre Comercio</div><div class="valor">${esc(nombreComercio)}</div></div>
+    <div class="fila"><div class="etiqueta">CUIT</div><div class="valor">${esc(cuit)}</div></div>
+    <div class="fila"><div class="etiqueta">Zona</div><div class="valor">${esc(zona || "—")}</div></div>
+    <div class="fila"><div class="etiqueta">Localidad/Ciudad</div><div class="valor">${esc(localidad || "—")}</div></div>
+    <div class="fila"><div class="etiqueta">Provincia</div><div class="valor">${esc(provincia || "—")}</div></div>
+    <div class="fila"><div class="etiqueta">Calle</div><div class="valor">${esc(calle)}</div></div>
+    <div class="fila"><div class="etiqueta">Número</div><div class="valor">${esc(String(numero))}</div></div>
+    <div class="fila"><div class="etiqueta">Observaciones</div><div class="valor">${esc(observaciones || "—")}</div></div>
+    <div class="fila"><div class="etiqueta">Estado</div><div class="valor">${esc(estado)}</div></div>
+  `;
+}
+
 export function contenidoPdfTransporte(
   fechaHora: string,
   tipo: string,

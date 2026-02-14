@@ -72,6 +72,77 @@ Módulo de Referencias:
     5° - Aplicar correcciones (en caso de ser necesario).
     6° - Una vez declarado el correcto funcionamiento pasaríamos a implementar modificaciones en otros módulos.
 
+
+Módulo de Clientes:
+
+- El formulario para Cargar clientes quiero que se implemente de la siguiente forma:
+
+            1° Campo Fecha de registro: Siempre debe mostrar la fecha actual, sin posibilidad de modificar.
+            2° Campo Nombre Representante: Campo obligatorio de texto corto (Ej, Hasta 100 posiciones).
+            3° Campo Contacto: Campo obligatorio de formató E.164 para contacto de celular (Ej: + [código país] [código área] [número], +5493511234567)
+            4° Campo email: Campo opcional con formato tipo email. 
+            5° Campo Código Interno: Campo obligatorio de texto corto que solo permita números y guiones (-). que no permita espacios ni símbolos o caracteres raros.
+            6° Campo Nombre Comercio: Campo obligatorio de texto corto, permitir letras, espacios, puntos, guiones, números y acentos.  (Ej, Hasta 100 posiciones). 
+            7° Campo Cuit: Campo obligatorio con el formato [2 dígitos] - [8 dígitos] - [1 dígito verificador], ejemplo: 20-12345678-3.
+            8° Campo Zona: Me debe mostrar una lista desplegable con opciones relacionadas con los registros que aparecen en la columna 2 (Zona) de la tabla de Registros de zonas ubicada en el submódulo Zonas.
+            9° Campo Localidad/Ciudad: Me debe mostrar una lista desplegable relacionando las localidades marcadas en cada zona, en el registro de Zonas en el submódulo Zonas. Ejemplo, en Zona A marque Villa María y Villa Nueva. Si en el campo 8° Zona (de este formulario) marque Zona A, el campo 9° Localidad/Ciudad (de este formulario), me debe mostrar una lista desplegable con esas dos localidades (Villa María y Villa Nueva).
+            10° Campo Provincia: Por defecto me debe cargar automaticamente la provincia de Córdoba, pero con opción desplegable de colocar cualquier otra provincia de Argentina.
+            11° Calle: Campo obligatorio de texto corto, ej, 100 posiciones.
+            12° Número: Campo obligatorio de formato número entero.
+            13° Campo Observaciones: Campo opcional de texto largo.
+            14° Campo Estado: (Activo/Inactivo), Por defecto este campo debe cargarse como estado Activo.
+            15° Botón de cancelar: Debe cancelar el registro limpiando los campos cargados y cerrando el formulario.
+            16° Botón de Registrar: Debe mostrar un mensaje de aceptar registro de datos y al dar Aceptar, se deben registrar todos los datos cargados.
+
+            NOTA: Implementar mensajes/notificaciones de error y/o advertencias en caso de datos incorrectos o incumplimientos de funciones.
+
+- Tabla para mostrar registros cargados:
+         1° Columna = Código: Debe mostrar el dato registrado en el campo Código Interno.
+         2° Columna = Cliente: Debe mostrar el dato registrado en el campo Nombre Comercio.
+         3° Columna = Contacto: Debe mostrar el registro cargado desde el campo Contacto.
+         4° Columna = Ubicación: Debe mostrar un ícono que me redirija a la ubicación del comercio en google maps, contemplando los datos cargados en los campos Localidad/Ciudad, Provincia, Calle y Número.
+         5° Columna = Estado: Debe mostrar el dato cargado en el campo Estado.
+         6° Columna = Acciones: Debe mostrar los siguientes íconos con sus funciones:
+
+                      # Ícono Editar: Debe mostrar el fórmulario para editar los datos registrados de cada Cliente.
+                      # Ícono Eliminar: Para eliminar completamente un cliente cargado.
+                      # Ícono Ver Detalle: Me debe mostrar la opción de descargar un pdf mostrandome los detalles de la siguiente forma:
+
+                      Fila 1: Título del detalle, ejemplo: Detalle de Cliente Registrado + (Fecha y hora de registro).
+                     Fila 2: Nombre Representante.
+                     Fila 3: Contacto.
+                     Fila 4: email.
+                     Fila 5: Código Interno.
+                     Fila 6: Nombre Comercio.
+                     Fila 7: Cuit.
+                     Fila 8: Zona.
+                     Fila 9: Localidad/Ciudad.
+                     Fila 10: Provincia.
+                     Fila 11: Calle.
+                     Fila 12: Número.
+                     Fila 13: Observaciones.
+                     Fila 14: Estado.
+                      Pie de página: usuario que registró este transporte y número de página. 
+                      # Antes de aplicar la edición o eliminación de registros, quiero que me muestre un mensaje de aceptación.
+            
+
+
+            
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
        
 
 Módulo de Visitas: 
@@ -105,4 +176,13 @@ Módulo de Visitas:
                                             auditoría, pero sin ninguna opción de modificarlos ni eliminarlos, que sea 
                                              solo en modo vista. Lo único que quiero agregar en esta parte es qué el 
                                              formulario me muestre un ícono para descargar el detalle en pdf.
+
+- Quiero que realices la implementación de estos nuevos módulos de la siguiente forma:
+
+    1° - Pasame un resumen de lo que entendiste y de cómo lo vas a implementar.
+    2° - Verifica la estructura necesaria a implementar en la base de datos y pasame los scripts para ejecutarlas.
+    3° - Realizar la implementación de los nuevos módulos.
+    4° - Verificar funcionamiento y diseños correctos de lo implementado.
+    5° - Aplicar correcciones (en caso de ser necesario).
+    6° - Una vez declarado el correcto funcionamiento pasaríamos a implementar modificaciones en otros módulos.
                           
