@@ -116,15 +116,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Email con formato inválido" }, { status: 400 });
   }
 
-  const { data: duplicado } = await supabase
+  const { data: dupCodigo } = await supabase
     .from("clientes")
     .select("id")
     .eq("id_comercio", usuario.id_comercio)
     .eq("codigo_interno", codigoStr)
     .maybeSingle();
 
-  if (duplicado) {
+  if (dupCodigo) {
     return NextResponse.json({ error: "Ya existe un cliente con ese código interno" }, { status: 400 });
+  }
+
+  const { data: dupCuit } = await supabase
+    .from("clientes")
+    .select("id")
+    .eq("id_comercio", usuario.id_comercio)
+    .eq("cuit", cuitStr)
+    .maybeSingle();
+
+  if (dupCuit) {
+    return NextResponse.json({ error: "Ya existe un cliente con ese CUIT" }, { status: 400 });
   }
 
   const { data, error } = await supabase

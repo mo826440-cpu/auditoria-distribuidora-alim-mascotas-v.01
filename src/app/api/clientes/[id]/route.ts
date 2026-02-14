@@ -104,6 +104,14 @@ export async function PATCH(
     const v = String(cuit).replace(/\s/g, "");
     if (!v) return NextResponse.json({ error: "CUIT obligatorio" }, { status: 400 });
     if (!validarCuit(v)) return NextResponse.json({ error: "CUIT formato XX-XXXXXXXX-X" }, { status: 400 });
+    const { data: dupCuit } = await supabase
+      .from("clientes")
+      .select("id")
+      .eq("id_comercio", miUsuario.id_comercio)
+      .eq("cuit", v)
+      .neq("id", id)
+      .maybeSingle();
+    if (dupCuit) return NextResponse.json({ error: "Ya existe un cliente con ese CUIT" }, { status: 400 });
     updates.cuit = v;
   }
   if (id_zona !== undefined) updates.id_zona = id_zona || null;

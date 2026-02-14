@@ -60,3 +60,7 @@
 - Agrega columnas: nombre_representante, contacto, codigo_interno, cuit, id_zona, calle, numero, observaciones, id_usuario_registro
 - Migra datos existentes (telefono→contacto, direccion→calle, etc.)
 - Índices y constraint UNIQUE para codigo_interno por comercio
+
+**Script 15** (`15.scriptCuitUnicoClientes.sql`): CUIT único por comercio. Ejecutar después del 14.
+
+**Validación de duplicados:** Código interno y CUIT no pueden repetirse entre clientes del mismo comercio. El formulario muestra mensaje de error al intentar guardar un valor duplicado.
