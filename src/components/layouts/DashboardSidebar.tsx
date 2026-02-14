@@ -4,12 +4,28 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const items = [
+type NavItem =
+  | { href: string; label: string }
+  | {
+      href: string;
+      label: string;
+      subItems: { href: string; label: string }[];
+    };
+
+const items: NavItem[] = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/usuarios", label: "Usuarios" },
   { href: "/clientes", label: "Clientes" },
   { href: "/vendedores", label: "Vendedores" },
   { href: "/transportistas", label: "Transportistas" },
+  {
+    href: "/referencias",
+    label: "Referencias",
+    subItems: [
+      { href: "/referencias/zonas", label: "Zonas" },
+      { href: "/referencias/transportes", label: "Transportes" },
+    ],
+  },
   { href: "/visitas", label: "Visitas" },
   { href: "/auditorias", label: "Auditorías" },
 ];
@@ -24,8 +40,11 @@ export function DashboardSidebar({
   onToggle: () => void;
 }) {
   const pathname = usePathname();
+  const [referenciasAbierto, setReferenciasAbierto] = useState(
+    pathname.startsWith("/referencias")
+  );
 
-  const filteredItems =
+  const filteredItems: NavItem[] =
     rol === "administrador"
       ? items
       : items.filter((i) => i.href !== "/usuarios");
@@ -47,19 +66,63 @@ export function DashboardSidebar({
         }`}
       >
         <nav className="p-4 pt-16 lg:pt-4 space-y-1">
-          {filteredItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                pathname === item.href
-                  ? "bg-primary-50 text-primary-700"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {filteredItems.map((item) => {
+            if ("subItems" in item && item.subItems) {
+              const isActive = pathname.startsWith(item.href);
+              return (
+                <div key={item.href}>
+                  <button
+                    onClick={() => setReferenciasAbierto(!referenciasAbierto)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? "bg-primary-50 text-primary-700"
+                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                    }`}
+                  >
+                    {item.label}
+                    <svg
+                      className={`w-4 h-4 transition-transform ${referenciasAbierto ? "rotate-180" : ""}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {referenciasAbierto && (
+                    <div className="ml-3 mt-1 space-y-1 border-l border-slate-200 pl-2">
+                      {item.subItems.map((sub) => (
+                        <Link
+                          key={sub.href}
+                          href={sub.href}
+                          className={`block px-2 py-1.5 rounded text-sm ${
+                            pathname === sub.href
+                              ? "bg-primary-50 text-primary-700 font-medium"
+                              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                          }`}
+                        >
+                          {sub.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`block px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  pathname === item.href
+                    ? "bg-primary-50 text-primary-700"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
       </aside>
       {isOpen && (
