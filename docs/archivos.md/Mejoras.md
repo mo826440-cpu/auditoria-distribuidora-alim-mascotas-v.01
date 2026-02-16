@@ -253,15 +253,26 @@ Módulo de Transportistas:
 
        
 
-Módulo de Visitas: 
+Módulo de Visitas:
+
+- Quiero que este módulo se muestre como "Programar Visitas".
 
 - El formulario para Programar visitas quiero que se implemente de la siguiente forma:
 
-            1° Campo Fecha de registro: Siempre debe mostrar la fecha actual, sin posibilidad de modificar.
-            2° Campo Fecha y hora de visita: Me debe dejar poner fecha y hora manualmente. Nunca me 
-                 debe permitir poner una fecha anterior a la actual. 
-            3° Campo Zona: Me debe mostrar una lista desplegable según las Zonas cargadas en Módulo de 
-                 referencias.
+            1° Campo Auditor: Por defecto debe aparecer el usuario logueado en el momento, pero con opción de cambiar manualmente.
+            2° Campo Fecha Programada: Me debe dejar poner fecha y hora manualmente. Nunca me 
+                 debe permitir poner una fecha anterior a la actual.
+            3° Campo Hora Inicio Estimada: Me debe permitir poner hora en formato hh:mm.
+            4° Campo Hora Fin Estimada: Me debe permitir poner hora en formato hh:mm.
+            5° Campo Zona: Me debe mostrar una lista desplegable con opciones relacionadas con los registros que aparecen en la columna 2 (Zona) de la tabla de Registros de zonas ubicada en el submódulo Zonas.
+            6° Campo Localidad/Ciudad: Me debe mostrar opciones con lista desplegable de las Localidades/Ciudades cargadas según la opción elegida en el campo 5° (Zona).
+            7° Campo Cliente: Me debe mostrar una lista desplegable de los clientes cargados, según la opción cargada en el campo 5° (Zona). Teniendo en cuenta que en el módulo Clientes, a cada cliente cargado se le asigna una zona.
+            8° Campo Observaciones: Campo opcional de texto largo.
+            9° Campo Estado: (Pendiente/Por vencer (Cuando la fecha de vencimiento está dentro de los 2 días antes de la fecha actual)/Vencida (cuando la fecha programada es anterior a la fecha actual)/En Proceso (cuando en el módulo Auditorías le das inicio a la visita pero todavía no esta finalizada)/Finalizada (cuando en el módulo de Auditorías finalizs la visita)), Por defecto este campo debe cargarse como estado Pendiente.
+            10° Botón de cancelar: Debe cancelar el registro limpiando los campos cargados y cerrando el formulario.
+            11° Botón de Registrar: Debe mostrar un mensaje de aceptar registro de datos y al dar Aceptar, se deben registrar todos los datos cargados.
+
+            NOTA: Implementar mensajes/notificaciones de error y/o advertencias en caso de datos incorrectos o incumplimientos de funciones.
 
 - Quiero implementar unos cambios en la que la tabla de registros de visitas, de modo que quede de la siguiente forma:
 
