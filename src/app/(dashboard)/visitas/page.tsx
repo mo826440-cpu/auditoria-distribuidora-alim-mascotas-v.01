@@ -2,7 +2,20 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { VisitasClient } from "@/components/features/visitas/VisitasClient";
 
-export default async function VisitasPage() {
+function getMonthRange(mes: number, anio: number) {
+  const primerDia = new Date(anio, mes - 1, 1);
+  const ultimoDia = new Date(anio, mes, 0);
+  return {
+    desde: primerDia.toISOString().slice(0, 10),
+    hasta: ultimoDia.toISOString().slice(0, 10),
+  };
+}
+
+export default async function VisitasPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ mes?: string; anio?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -22,6 +35,12 @@ export default async function VisitasPage() {
     redirect("/dashboard");
   }
 
+  const params = await searchParams;
+  const now = new Date();
+  const mes = Math.max(1, Math.min(12, params?.mes ? parseInt(params.mes, 10) || now.getMonth() + 1 : now.getMonth() + 1));
+  const anio = Math.max(2020, Math.min(2100, params?.anio ? parseInt(params.anio, 10) || now.getFullYear() : now.getFullYear()));
+  const { desde, hasta } = getMonthRange(mes, anio);
+
   const [visitasRes, clientesRes, vendedoresRes] = await Promise.all([
     supabase
       .from("programacion_visitas")
@@ -37,7 +56,9 @@ export default async function VisitasPage() {
         clientes(nombre),
         vendedores(nombre)
       `)
-      .order("fecha_visita", { ascending: false }),
+      .gte("fecha_visita", desde)
+      .lte("fecha_visita", hasta)
+      .order("fecha_visita", { ascending: true }),
     supabase
       .from("clientes")
       .select("id, nombre")
@@ -70,6 +91,8 @@ export default async function VisitasPage() {
         clientes={clientes}
         vendedores={vendedores}
         rol={rol}
+        mes={mes}
+        anio={anio}
       />
     </div>
   );

@@ -11,6 +11,17 @@ type Zona = {
   localidades: string[];
 };
 
+type Vendedor = {
+  id: string;
+  nombre: string;
+  id_zonas?: string[] | null;
+};
+
+type Transportista = {
+  id: string;
+  nombre: string;
+};
+
 type Cliente = {
   id: string;
   nombre: string;
@@ -20,7 +31,11 @@ type Cliente = {
   codigo_interno?: string | null;
   cuit?: string | null;
   id_zona?: string | null;
+  id_vendedor_frecuente?: string | null;
+  id_transportista_frecuente?: string | null;
   zona_nombre?: string | null;
+  vendedor_nombre?: string | null;
+  transportista_nombre?: string | null;
   localidad?: string | null;
   provincia?: string | null;
   calle?: string | null;
@@ -51,19 +66,24 @@ function formatearCuit(v: string): string {
   return s;
 }
 
-function urlGoogleMaps(calle: string, numero: number, localidad: string, provincia: string): string {
-  const q = encodeURIComponent(`${calle} ${numero}, ${localidad}, ${provincia}, Argentina`);
+function urlGoogleMaps(localidad: string, provincia: string, calle: string, numero: number): string {
+  const direccion = `${localidad}, ${provincia}, ${calle} ${numero}, Argentina`;
+  const q = encodeURIComponent(direccion);
   return `https://www.google.com/maps/search/?api=1&query=${q}`;
 }
 
 export function ClientesClient({
   clientes,
   zonas,
+  vendedores,
+  transportistas,
   rol,
   usuarioNombre,
 }: {
   clientes: Cliente[];
   zonas: Zona[];
+  vendedores: Vendedor[];
+  transportistas: Transportista[];
   rol: string;
   usuarioNombre: string;
 }) {
@@ -87,11 +107,17 @@ export function ClientesClient({
   const [formProvincia, setFormProvincia] = useState("Córdoba");
   const [formCalle, setFormCalle] = useState("");
   const [formNumero, setFormNumero] = useState<string>("");
+  const [formVendedor, setFormVendedor] = useState("");
+  const [formTransportista, setFormTransportista] = useState("");
   const [formObservaciones, setFormObservaciones] = useState("");
   const [formActivo, setFormActivo] = useState(true);
 
   const localidadesZona = formZona
     ? (zonas.find((z) => z.id === formZona)?.localidades ?? [])
+    : [];
+
+  const vendedoresDeZona = formZona
+    ? vendedores.filter((v) => (v.id_zonas ?? []).includes(formZona))
     : [];
 
   const refContacto = useRef<HTMLInputElement>(null);
@@ -113,6 +139,8 @@ export function ClientesClient({
     setFormProvincia("Córdoba");
     setFormCalle("");
     setFormNumero("0");
+    setFormVendedor("");
+    setFormTransportista("");
     setFormObservaciones("");
     setFormActivo(true);
     setError(null);
@@ -133,6 +161,8 @@ export function ClientesClient({
     setFormProvincia(c.provincia ?? "Córdoba");
     setFormCalle(c.calle ?? "");
     setFormNumero(c.numero != null ? String(c.numero) : "0");
+    setFormVendedor(c.id_vendedor_frecuente ?? "");
+    setFormTransportista(c.id_transportista_frecuente ?? "");
     setFormObservaciones(c.observaciones ?? "");
     setFormActivo(c.activo);
     setError(null);
@@ -140,21 +170,27 @@ export function ClientesClient({
   }
 
   function validarForm(): string | null {
-    if (!formNombreRep.trim()) return "Nombre representante obligatorio";
-    if (formNombreRep.length > 100) return "Nombre representante: máximo 100 caracteres";
-    if (!formContacto.trim()) return "Contacto obligatorio";
-    if (!E164_REGEX.test(formContacto)) return "Contacto en formato E.164 (ej: +5493511234567)";
-    if (!formCodigo.trim()) return "Código interno obligatorio";
-    if (!CODIGO_INTERNO_REGEX.test(formCodigo)) return "Código interno: solo números y guiones";
     if (!formNombre.trim()) return "Nombre comercio obligatorio";
     if (formNombre.length > 100) return "Nombre comercio: máximo 100 caracteres";
     if (!formCuit.trim()) return "CUIT obligatorio";
     if (!validarCuit(formCuit)) return "CUIT formato XX-XXXXXXXX-X";
+    if (!formCodigo.trim()) return "Código interno obligatorio";
+    if (!CODIGO_INTERNO_REGEX.test(formCodigo)) return "Código interno: solo números y guiones";
+    if (!formNombreRep.trim()) return "Nombre representante obligatorio";
+    if (formNombreRep.length > 100) return "Nombre representante: máximo 100 caracteres";
+    if (!formContacto.trim()) return "Contacto obligatorio";
+    if (!E164_REGEX.test(formContacto)) return "Contacto en formato E.164 (ej: +5493511234567)";
+    if (!formEmail.trim()) return "Email obligatorio";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail)) return "Email inválido";
+    if (!formZona) return "Zona obligatoria";
+    if (!formLocalidad.trim()) return "Localidad/Ciudad obligatoria";
+    if (!formProvincia.trim()) return "Provincia obligatoria";
     if (!formCalle.trim()) return "Calle obligatoria";
     if (formCalle.length > 100) return "Calle: máximo 100 caracteres";
     const num = Number(formNumero);
     if (isNaN(num) || !Number.isInteger(num)) return "Número debe ser entero";
-    if (formEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail)) return "Email inválido";
+    if (!formVendedor) return "Vendedor frecuente obligatorio";
+    if (!formTransportista) return "Transportista frecuente obligatorio";
     return null;
   }
 
@@ -175,7 +211,7 @@ export function ClientesClient({
         body: JSON.stringify({
           nombre_representante: formNombreRep.trim(),
           contacto: formContacto.trim(),
-          email: formEmail.trim() || undefined,
+          email: formEmail.trim(),
           codigo_interno: formCodigo.trim(),
           nombre: formNombre.trim(),
           cuit: formCuit.replace(/\s/g, ""),
@@ -184,6 +220,8 @@ export function ClientesClient({
           provincia: formProvincia,
           calle: formCalle.trim(),
           numero: parseInt(formNumero, 10) || 0,
+          id_vendedor_frecuente: formVendedor || undefined,
+          id_transportista_frecuente: formTransportista || undefined,
           observaciones: formObservaciones.trim() || undefined,
           activo: formActivo,
         }),
@@ -217,7 +255,7 @@ export function ClientesClient({
         body: JSON.stringify({
           nombre_representante: formNombreRep.trim(),
           contacto: formContacto.trim(),
-          email: formEmail.trim() || undefined,
+          email: formEmail.trim(),
           codigo_interno: formCodigo.trim(),
           nombre: formNombre.trim(),
           cuit: formCuit.replace(/\s/g, ""),
@@ -226,6 +264,8 @@ export function ClientesClient({
           provincia: formProvincia,
           calle: formCalle.trim(),
           numero: parseInt(formNumero, 10) || 0,
+          id_vendedor_frecuente: formVendedor || undefined,
+          id_transportista_frecuente: formTransportista || undefined,
           observaciones: formObservaciones.trim() || undefined,
           activo: formActivo,
         }),
@@ -273,6 +313,8 @@ export function ClientesClient({
       c.provincia ?? "—",
       c.calle ?? "—",
       c.numero ?? 0,
+      c.vendedor_nombre ?? "—",
+      c.transportista_nombre ?? "—",
       c.observaciones ?? "—",
       c.activo ? "Activo" : "Inactivo"
     );
@@ -303,53 +345,6 @@ export function ClientesClient({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Nombre Representante *</label>
-        <input
-          type="text"
-          value={formNombreRep}
-          onChange={(e) => setFormNombreRep(e.target.value.slice(0, 100))}
-          required
-          maxLength={100}
-          placeholder="Hasta 100 caracteres"
-          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Contacto * (E.164)</label>
-        <input
-          ref={refContacto}
-          type="tel"
-          value={formContacto}
-          onChange={(e) => setFormContacto(e.target.value)}
-          required
-          placeholder="+5493511234567"
-          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
-        <input
-          type="email"
-          value={formEmail}
-          onChange={(e) => setFormEmail(e.target.value)}
-          placeholder="cliente@ejemplo.com"
-          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Código Interno *</label>
-        <input
-          ref={refCodigo}
-          type="text"
-          inputMode="numeric"
-          value={formCodigo}
-          onChange={(e) => setFormCodigo(e.target.value.replace(/[^0-9\-]/g, ""))}
-          required
-          placeholder="Solo números y guiones (ej: 001-2024)"
-          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-        />
-      </div>
-      <div>
         <label className="block text-sm font-medium text-slate-300 mb-1">Nombre Comercio *</label>
         <input
           type="text"
@@ -374,13 +369,68 @@ export function ClientesClient({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Zona</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Código Interno *</label>
+        <input
+          ref={refCodigo}
+          type="text"
+          inputMode="numeric"
+          value={formCodigo}
+          onChange={(e) => setFormCodigo(e.target.value.replace(/[^0-9\-]/g, ""))}
+          required
+          placeholder="Solo números y guiones (ej: 001-2024)"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Nombre Representante *</label>
+        <input
+          type="text"
+          value={formNombreRep}
+          onChange={(e) => setFormNombreRep(e.target.value.slice(0, 100))}
+          required
+          maxLength={100}
+          placeholder="Hasta 100 caracteres"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Contacto * (E.164)</label>
+        <input
+          ref={refContacto}
+          type="tel"
+          value={formContacto}
+          onChange={(e) => setFormContacto(e.target.value)}
+          required
+          placeholder="+5493511234567"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Email *</label>
+        <input
+          type="email"
+          value={formEmail}
+          onChange={(e) => setFormEmail(e.target.value)}
+          required
+          placeholder="cliente@ejemplo.com"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Zona *</label>
         <select
           ref={refZona}
           value={formZona}
           onChange={(e) => {
-            setFormZona(e.target.value);
+            const nuevaZona = e.target.value;
+            setFormZona(nuevaZona);
             setFormLocalidad("");
+            const vendedoresNuevaZona = nuevaZona
+              ? vendedores.filter((v) => (v.id_zonas ?? []).includes(nuevaZona))
+              : [];
+            if (formVendedor && !vendedoresNuevaZona.some((v) => v.id === formVendedor)) {
+              setFormVendedor("");
+            }
             setTimeout(() => refLocalidad.current?.focus(), 0);
           }}
           className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
@@ -394,7 +444,7 @@ export function ClientesClient({
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Localidad/Ciudad</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Localidad/Ciudad *</label>
         <select
           ref={refLocalidad}
           value={formLocalidad}
@@ -413,7 +463,7 @@ export function ClientesClient({
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Provincia</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Provincia *</label>
         <select
           ref={refProvincia}
           value={formProvincia}
@@ -453,6 +503,44 @@ export function ClientesClient({
           step={1}
           className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Vendedor frecuente *</label>
+        <select
+          value={formVendedor}
+          onChange={(e) => setFormVendedor(e.target.value)}
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+        >
+          <option value="">
+            {formZona ? "— Seleccionar —" : "— Seleccionar zona primero —"}
+          </option>
+          {modal === "editar" && formVendedor && !vendedoresDeZona.some((v) => v.id === formVendedor) && clienteEdit?.vendedor_nombre && (
+            <option value={formVendedor}>{clienteEdit.vendedor_nombre}</option>
+          )}
+          {vendedoresDeZona.map((v) => (
+            <option key={v.id} value={v.id}>
+              {v.nombre}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Transportista frecuente *</label>
+        <select
+          value={formTransportista}
+          onChange={(e) => setFormTransportista(e.target.value)}
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+        >
+          <option value="">— Seleccionar —</option>
+          {modal === "editar" && formTransportista && !transportistas.some((t) => t.id === formTransportista) && clienteEdit?.transportista_nombre && (
+            <option value={formTransportista}>{clienteEdit.transportista_nombre}</option>
+          )}
+          {transportistas.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.nombre}
+            </option>
+          ))}
+        </select>
       </div>
       <div>
         <label className="block text-sm font-medium text-slate-300 mb-1">Observaciones</label>
@@ -522,14 +610,20 @@ export function ClientesClient({
                       {c.calle && c.numero != null && c.localidad && c.provincia ? (
                         <a
                           href={urlGoogleMaps(
-                            c.calle,
-                            c.numero,
                             c.localidad,
-                            c.provincia
+                            c.provincia,
+                            c.calle,
+                            c.numero
                           )}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-primary-400 hover:text-primary-300 hover:underline"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            const url = urlGoogleMaps(c.localidad!, c.provincia!, c.calle!, c.numero!);
+                            const w = window.open(url, "_blank", "noopener,noreferrer");
+                            if (!w) window.location.href = url;
+                          }}
+                          className="inline-flex items-center gap-1 text-primary-400 hover:text-primary-300 hover:underline cursor-pointer"
                           title="Ver en Google Maps"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

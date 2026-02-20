@@ -56,6 +56,8 @@ export async function PATCH(
     provincia,
     calle,
     numero,
+    id_vendedor_frecuente,
+    id_transportista_frecuente,
     observaciones,
     activo,
   } = body;
@@ -126,6 +128,8 @@ export async function PATCH(
   if (id_zona !== undefined) updates.id_zona = id_zona || null;
   if (localidad !== undefined) updates.localidad = localidad ? String(localidad).trim() : null;
   if (provincia !== undefined) updates.provincia = provincia ? String(provincia).trim() : "Córdoba";
+  if (id_vendedor_frecuente !== undefined) updates.id_vendedor_frecuente = id_vendedor_frecuente || null;
+  if (id_transportista_frecuente !== undefined) updates.id_transportista_frecuente = id_transportista_frecuente || null;
   if (calle !== undefined) {
     const v = String(calle).trim();
     if (!v) return NextResponse.json({ error: "Calle obligatoria" }, { status: 400 });

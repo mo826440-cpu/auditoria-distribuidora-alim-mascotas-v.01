@@ -22,7 +22,7 @@ export default async function ClientesPage() {
     redirect("/dashboard");
   }
 
-  const [clientesRes, zonasRes] = await Promise.all([
+  const [clientesRes, zonasRes, vendedoresRes, transportistasRes] = await Promise.all([
     supabase
       .from("clientes")
       .select(`
@@ -34,6 +34,8 @@ export default async function ClientesPage() {
         codigo_interno,
         cuit,
         id_zona,
+        id_vendedor_frecuente,
+        id_transportista_frecuente,
         localidad,
         provincia,
         calle,
@@ -50,10 +52,22 @@ export default async function ClientesPage() {
       .from("referencias_zonas")
       .select("id, nombre, localidades")
       .order("nombre"),
+    supabase
+      .from("vendedores")
+      .select("id, nombre, id_zonas")
+      .eq("activo", true)
+      .order("nombre"),
+    supabase
+      .from("transportistas")
+      .select("id, nombre")
+      .eq("activo", true)
+      .order("nombre"),
   ]);
 
   const clientesRaw = clientesRes.data ?? [];
   const zonas = zonasRes.data ?? [];
+  const vendedores = vendedoresRes.data ?? [];
+  const transportistas = transportistasRes.data ?? [];
 
   const idsRegistro = [...new Set(clientesRaw.map((c) => c.id_usuario_registro).filter(Boolean))];
   const { data: usuarios } = await supabase
@@ -62,6 +76,8 @@ export default async function ClientesPage() {
     .in("id", idsRegistro);
 
   const usuariosMap = new Map((usuarios ?? []).map((u) => [u.id, u.nombre]));
+  const vendedoresMap = new Map(vendedores.map((v) => [v.id, v.nombre]));
+  const transportistasMap = new Map(transportistas.map((t) => [t.id, t.nombre]));
 
   const clientes = clientesRaw.map((c) => {
     const z = c.referencias_zonas;
@@ -70,6 +86,8 @@ export default async function ClientesPage() {
       ...c,
       zona_nombre: zonaNombre ?? null,
       usuario_registro: c.id_usuario_registro ? usuariosMap.get(c.id_usuario_registro) ?? "—" : "—",
+      vendedor_nombre: c.id_vendedor_frecuente ? vendedoresMap.get(c.id_vendedor_frecuente) ?? null : null,
+      transportista_nombre: c.id_transportista_frecuente ? transportistasMap.get(c.id_transportista_frecuente) ?? null : null,
     };
   });
 
@@ -80,6 +98,8 @@ export default async function ClientesPage() {
       <ClientesClient
         clientes={clientes}
         zonas={zonas}
+        vendedores={vendedores}
+        transportistas={transportistas}
         rol={usuario.rol}
         usuarioNombre={usuario.nombre}
       />

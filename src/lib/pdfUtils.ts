@@ -75,6 +75,8 @@ export function contenidoPdfCliente(
   provincia: string,
   calle: string,
   numero: number,
+  vendedorFrecuente: string,
+  transportistaFrecuente: string,
   observaciones: string,
   estado: string
 ) {
@@ -91,6 +93,8 @@ export function contenidoPdfCliente(
     <div class="fila"><div class="etiqueta">Provincia</div><div class="valor">${esc(provincia || "—")}</div></div>
     <div class="fila"><div class="etiqueta">Calle</div><div class="valor">${esc(calle)}</div></div>
     <div class="fila"><div class="etiqueta">Número</div><div class="valor">${esc(String(numero))}</div></div>
+    <div class="fila"><div class="etiqueta">Vendedor frecuente</div><div class="valor">${esc(vendedorFrecuente || "—")}</div></div>
+    <div class="fila"><div class="etiqueta">Transportista frecuente</div><div class="valor">${esc(transportistaFrecuente || "—")}</div></div>
     <div class="fila"><div class="etiqueta">Observaciones</div><div class="valor">${esc(observaciones || "—")}</div></div>
     <div class="fila"><div class="etiqueta">Estado</div><div class="valor">${esc(estado)}</div></div>
   `;
@@ -145,6 +149,30 @@ export function contenidoPdfTransportista(
     <div class="fila"><div class="etiqueta">Residencia</div><div class="valor">${esc(residencia || "—")}</div></div>
     <div class="fila"><div class="etiqueta">Observaciones</div><div class="valor">${esc(observaciones || "—")}</div></div>
     <div class="fila"><div class="etiqueta">Estado</div><div class="valor">${esc(estado)}</div></div>
+  `;
+}
+
+export function contenidoPdfVisita(
+  fechaVisita: string,
+  cliente: string,
+  vendedor: string,
+  horaInicio: string,
+  horaFin: string,
+  observaciones: string,
+  estado: string
+) {
+  const fechaStr = new Date(fechaVisita + "T12:00:00").toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  return `
+    <h1>Detalle de Visita Programada (${esc(fechaStr)})</h1>
+    <div class="fila"><div class="etiqueta">Cliente</div><div class="valor">${esc(cliente)}</div></div>
+    <div class="fila"><div class="etiqueta">Vendedor</div><div class="valor">${esc(vendedor)}</div></div>
+    <div class="fila"><div class="etiqueta">Horario</div><div class="valor">${esc(horaInicio)} – ${esc(horaFin)}</div></div>
+    <div class="fila"><div class="etiqueta">Estado</div><div class="valor">${esc(estado)}</div></div>
+    <div class="fila"><div class="etiqueta">Observaciones</div><div class="valor">${esc(observaciones || "—")}</div></div>
   `;
 }
 

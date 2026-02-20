@@ -52,6 +52,8 @@ export async function POST(request: Request) {
     provincia,
     calle,
     numero,
+    id_vendedor_frecuente,
+    id_transportista_frecuente,
     observaciones,
     activo,
   } = body;
@@ -100,8 +102,23 @@ export async function POST(request: Request) {
     }, { status: 400 });
   }
 
+  if (!id_zona) {
+    return NextResponse.json({ error: "La zona es obligatoria" }, { status: 400 });
+  }
+  if (!String(localidad || "").trim()) {
+    return NextResponse.json({ error: "La localidad/ciudad es obligatoria" }, { status: 400 });
+  }
+  if (!String(provincia || "").trim()) {
+    return NextResponse.json({ error: "La provincia es obligatoria" }, { status: 400 });
+  }
   if (!String(calle || "").trim()) {
     return NextResponse.json({ error: "La calle es obligatoria" }, { status: 400 });
+  }
+  if (!id_vendedor_frecuente) {
+    return NextResponse.json({ error: "El vendedor frecuente es obligatorio" }, { status: 400 });
+  }
+  if (!id_transportista_frecuente) {
+    return NextResponse.json({ error: "El transportista frecuente es obligatorio" }, { status: 400 });
   }
   if (String(calle).length > 100) {
     return NextResponse.json({ error: "Calle: máximo 100 caracteres" }, { status: 400 });
@@ -112,8 +129,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "El número es obligatorio y debe ser entero" }, { status: 400 });
   }
 
-  const emailStr = email ? String(email).trim() : "";
-  if (emailStr && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr)) {
+  const emailStr = String(email || "").trim();
+  if (!emailStr) {
+    return NextResponse.json({ error: "El email es obligatorio" }, { status: 400 });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr)) {
     return NextResponse.json({ error: "Email con formato inválido" }, { status: 400 });
   }
 
@@ -155,7 +175,7 @@ export async function POST(request: Request) {
       id_comercio: usuario.id_comercio,
       nombre_representante: String(nombre_representante).trim(),
       contacto: contactoStr,
-      email: emailStr || null,
+      email: emailStr,
       codigo_interno: codigoStr,
       nombre: String(nombre).trim(),
       cuit: cuitStr,
@@ -164,6 +184,8 @@ export async function POST(request: Request) {
       provincia: provincia ? String(provincia).trim() : "Córdoba",
       calle: String(calle).trim(),
       numero: num,
+      id_vendedor_frecuente: id_vendedor_frecuente || null,
+      id_transportista_frecuente: id_transportista_frecuente || null,
       observaciones: observaciones ? String(observaciones).trim() : null,
       activo: activo !== false,
       id_usuario_registro: user.id,
