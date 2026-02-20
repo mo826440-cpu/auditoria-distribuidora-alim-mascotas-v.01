@@ -90,18 +90,18 @@ export default function SetPasswordPage() {
 
   if (esperandoHash) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-slate-500">Cargando...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+        <p className="text-slate-400">Cargando...</p>
       </div>
     );
   }
 
   if (!listo) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)] px-4">
         <div className="max-w-md text-center">
-          <h1 className="text-xl font-bold text-slate-900">Link inválido o expirado</h1>
-          <p className="mt-2 text-slate-600">
+          <h1 className="text-xl font-bold text-[var(--foreground)]">Link inválido o expirado</h1>
+          <p className="mt-2 text-slate-300">
             El link de invitación no es válido o ya expiró. Pedile al administrador que te envíe una nueva invitación.
           </p>
           <Link
@@ -116,23 +116,23 @@ export default function SetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)] px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900">Crear contraseña</h1>
-          <p className="mt-2 text-slate-600">
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">Crear contraseña</h1>
+          <p className="mt-2 text-slate-300">
             Completá tu registro configurando una contraseña para tu cuenta
           </p>
         </div>
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-xl p-8 shadow-sm border border-slate-100 space-y-5"
+          className="bg-slate-850 rounded-xl p-8 shadow-sm border border-slate-700 space-y-5"
         >
           {error && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>
+            <div className="p-3 rounded-lg bg-red-900/50 text-red-300 text-sm">{error}</div>
           )}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
               Contraseña
             </label>
             <input
@@ -143,12 +143,12 @@ export default function SetPasswordPage() {
               placeholder="Mínimo 6 caracteres"
               required
               minLength={6}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+              className="w-full px-4 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
               autoComplete="new-password"
             />
           </div>
           <div>
-            <label htmlFor="confirm" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="confirm" className="block text-sm font-medium text-slate-300 mb-1">
               Confirmar contraseña
             </label>
             <input
@@ -159,7 +159,7 @@ export default function SetPasswordPage() {
               placeholder="Repetí la contraseña"
               required
               minLength={6}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+              className="w-full px-4 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
               autoComplete="new-password"
             />
           </div>
@@ -173,7 +173,7 @@ export default function SetPasswordPage() {
         </form>
         <Link
           href="/login"
-          className="block text-center text-slate-500 hover:text-slate-700 text-sm"
+          className="block text-center text-slate-400 hover:text-slate-300 text-sm"
         >
           ← Volver al inicio
         </Link>

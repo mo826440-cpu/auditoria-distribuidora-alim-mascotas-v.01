@@ -126,27 +126,27 @@ export function UsuariosClient({
         Crear usuario
       </button>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-slate-850 rounded-xl border border-slate-700 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="bg-slate-800 border-b border-slate-700">
             <tr>
-              <th className="text-left py-3 px-4 font-medium text-slate-700">Nombre</th>
-              <th className="text-left py-3 px-4 font-medium text-slate-700">Email</th>
-              <th className="text-left py-3 px-4 font-medium text-slate-700">Rol</th>
-              <th className="text-left py-3 px-4 font-medium text-slate-700">Estado</th>
-              <th className="text-right py-3 px-4 font-medium text-slate-700">Acciones</th>
+              <th className="text-left py-3 px-4 font-medium text-slate-200">Nombre</th>
+              <th className="text-left py-3 px-4 font-medium text-slate-200">Email</th>
+              <th className="text-left py-3 px-4 font-medium text-slate-200">Rol</th>
+              <th className="text-left py-3 px-4 font-medium text-slate-200">Estado</th>
+              <th className="text-right py-3 px-4 font-medium text-slate-200">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {usuarios.map((u) => (
-              <tr key={u.id} className="border-b border-slate-100 hover:bg-slate-50">
-                <td className="py-3 px-4">{u.nombre}</td>
-                <td className="py-3 px-4">{u.email}</td>
-                <td className="py-3 px-4 capitalize">{u.rol}</td>
+              <tr key={u.id} className="border-b border-slate-700 hover:bg-slate-700/50">
+                <td className="py-3 px-4 text-slate-300">{u.nombre}</td>
+                <td className="py-3 px-4 text-slate-300">{u.email}</td>
+                <td className="py-3 px-4 capitalize text-slate-300">{u.rol}</td>
                 <td className="py-3 px-4">
                   <span
                     className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
-                      u.activo ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"
+                      u.activo ? "bg-green-900/50 text-green-300" : "bg-slate-700 text-slate-400"
                     }`}
                   >
                     {u.activo ? "Activo" : "Inactivo"}
@@ -155,7 +155,7 @@ export function UsuariosClient({
                 <td className="py-3 px-4 text-right">
                   <button
                     onClick={() => abrirEditar(u)}
-                    className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                    className="p-1.5 text-slate-400 hover:text-primary-400 hover:bg-primary-900/40 rounded"
                     title="Editar"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,7 +165,7 @@ export function UsuariosClient({
                   {u.id !== currentUserId && (
                     <button
                       onClick={() => setDeleteConfirm(u.id)}
-                      className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded ml-1"
+                      className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/40 rounded ml-1"
                       title="Eliminar"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -183,39 +183,39 @@ export function UsuariosClient({
       {/* Modal Nuevo */}
       {modal === "nuevo" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-900">Crear usuario</h2>
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">Crear usuario</h2>
             {successMessage && (
-              <div className="mt-2 p-3 rounded bg-green-50 text-green-700 text-sm">{successMessage}</div>
+              <div className="mt-2 p-3 rounded bg-green-900/50 text-green-300 text-sm">{successMessage}</div>
             )}
             {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
             )}
             <form onSubmit={handleCrear} className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Nombre</label>
                 <input
                   type="text"
                   value={formNombre}
                   onChange={(e) => setFormNombre(e.target.value)}
                   required
                   placeholder="Ej: Gabriel Ortiz"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
                 <input
                   type="email"
                   value={formEmail}
                   onChange={(e) => setFormEmail(e.target.value)}
                   required
                   placeholder="Ej: ortiz_martinfsc@hotmail.com"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Contraseña</label>
                 <input
                   type="password"
                   value={formPassword}
@@ -223,29 +223,29 @@ export function UsuariosClient({
                   required
                   minLength={6}
                   placeholder="Mínimo 6 caracteres"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Rol</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Rol</label>
                 <select
                   value={formRol}
                   onChange={(e) => setFormRol(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
                 >
                   <option value="administrador">Administrador</option>
                   <option value="auditor">Auditor</option>
                   <option value="visitante">Visitante</option>
                 </select>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 El usuario quedará asignado al mismo comercio que tenés. Podrá iniciar sesión de inmediato.
               </p>
               <div className="flex gap-2 justify-end pt-2">
                 <button
                   type="button"
                   onClick={() => setModal(null)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                  className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
                 >
                   Cancelar
                 </button>
@@ -265,29 +265,29 @@ export function UsuariosClient({
       {/* Modal Editar */}
       {modal === "editar" && usuarioEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-900">Editar usuario</h2>
-            <p className="text-sm text-slate-500 mt-1">{usuarioEdit.email}</p>
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">Editar usuario</h2>
+            <p className="text-sm text-slate-400 mt-1">{usuarioEdit.email}</p>
             {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
             )}
             <form onSubmit={handleEditar} className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Nombre</label>
                 <input
                   type="text"
                   value={formNombre}
                   onChange={(e) => setFormNombre(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Rol</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Rol</label>
                 <select
                   value={formRol}
                   onChange={(e) => setFormRol(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
                 >
                   <option value="administrador">Administrador</option>
                   <option value="auditor">Auditor</option>
@@ -298,7 +298,7 @@ export function UsuariosClient({
                 <button
                   type="button"
                   onClick={() => setModal(null)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                  className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
                 >
                   Cancelar
                 </button>
@@ -318,18 +318,18 @@ export function UsuariosClient({
       {/* Confirmar eliminar */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-900">¿Eliminar usuario?</h2>
-            <p className="mt-2 text-slate-600">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">¿Eliminar usuario?</h2>
+            <p className="mt-2 text-slate-300">
               Esta acción no se puede deshacer. El usuario perderá el acceso.
             </p>
             {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
             )}
             <div className="flex gap-2 justify-end mt-6">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
               >
                 Cancelar
               </button>

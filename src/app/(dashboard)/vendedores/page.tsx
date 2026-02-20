@@ -69,8 +69,8 @@ export default async function VendedoresPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Vendedores</h1>
-      <p className="mt-1 text-slate-600">Gestioná la fuerza de ventas</p>
+      <h1 className="text-2xl font-bold text-[var(--foreground)]">Vendedores</h1>
+      <p className="mt-1 text-slate-300">Gestioná la fuerza de ventas</p>
       <VendedoresClient
         vendedores={vendedores}
         zonas={zonas}

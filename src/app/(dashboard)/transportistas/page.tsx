@@ -69,8 +69,8 @@ export default async function TransportistasPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Transportistas</h1>
-      <p className="mt-1 text-slate-600">Gestioná los repartidores</p>
+      <h1 className="text-2xl font-bold text-[var(--foreground)]">Transportistas</h1>
+      <p className="mt-1 text-slate-300">Gestioná los repartidores</p>
       <TransportistasClient
         transportistas={transportistas}
         zonas={zonas}

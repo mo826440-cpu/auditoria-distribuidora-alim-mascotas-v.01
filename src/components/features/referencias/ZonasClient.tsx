@@ -155,34 +155,34 @@ export function ZonasClient({
         </button>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-slate-850 rounded-xl border border-slate-700 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="bg-slate-800 border-b border-slate-700">
             <tr>
-              <th className="text-left py-3 px-4 font-medium text-slate-700">Fecha</th>
-              <th className="text-left py-3 px-4 font-medium text-slate-700">Zona</th>
+              <th className="text-left py-3 px-4 font-medium text-slate-200">Fecha</th>
+              <th className="text-left py-3 px-4 font-medium text-slate-200">Zona</th>
               {canEdit && (
-                <th className="text-right py-3 px-4 font-medium text-slate-700">Acciones</th>
+                <th className="text-right py-3 px-4 font-medium text-slate-200">Acciones</th>
               )}
             </tr>
           </thead>
           <tbody>
             {zonas.length === 0 ? (
               <tr>
-                <td colSpan={canEdit ? 3 : 2} className="py-8 px-4 text-center text-slate-500">
+                <td colSpan={canEdit ? 3 : 2} className="py-8 px-4 text-center text-slate-400">
                   No hay zonas cargadas. {canEdit && "Creá una para comenzar."}
                 </td>
               </tr>
             ) : (
               zonas.map((z) => (
-                <tr key={z.id} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="py-3 px-4">{formatFecha(z.updated_at || z.created_at)}</td>
-                  <td className="py-3 px-4 font-medium">{z.nombre}</td>
+                <tr key={z.id} className="border-b border-slate-700 hover:bg-slate-700/50">
+                  <td className="py-3 px-4 text-slate-300">{formatFecha(z.updated_at || z.created_at)}</td>
+                  <td className="py-3 px-4 font-medium text-slate-200">{z.nombre}</td>
                   {canEdit && (
                     <td className="py-3 px-4 text-right">
                       <button
                         onClick={() => abrirEditar(z)}
-                        className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                        className="p-1.5 text-slate-400 hover:text-primary-400 hover:bg-primary-900/40 rounded"
                         title="Editar"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,7 +200,7 @@ export function ZonasClient({
                       </button>
                       <button
                         onClick={() => setDeleteConfirm(z.id)}
-                        className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded ml-1"
+                        className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/40 rounded ml-1"
                         title="Eliminar"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -219,11 +219,11 @@ export function ZonasClient({
       {/* Modal Nuevo / Editar */}
       {(modal === "nuevo" || modal === "editar") && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 overflow-y-auto py-6 px-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-xl my-2 max-h-[calc(100vh-3rem)] overflow-y-auto">
-            <h2 className="text-lg font-semibold text-slate-900">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-2xl shadow-xl my-2 max-h-[calc(100vh-3rem)] overflow-y-auto border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">
               {modal === "nuevo" ? "Nueva zona" : "Editar zona"}
             </h2>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-slate-400 mt-1">
               Fecha de registro: {new Date().toLocaleString("es-AR")} (automática)
             </p>
             {error && (
@@ -233,21 +233,21 @@ export function ZonasClient({
             )}
             <form onSubmit={handleGuardar} className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre zona *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Nombre zona *</label>
                 <input
                   type="text"
                   value={formNombre}
                   onChange={(e) => setFormNombre(e.target.value)}
                   required
                   placeholder="Ej: Zona Norte"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-300 mb-1">
                   Localidades y ciudades (Córdoba) * — Seleccioná al menos una
                 </label>
-                <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-lg p-3 space-y-2">
+                <div className="max-h-48 overflow-y-auto border border-slate-600 rounded-lg p-3 space-y-2 bg-slate-800">
                   {LOCALIDADES_CORDOBA.map((loc) => {
                     const disabled = !puedeSeleccionar(loc);
                     const checked = formLocalidades.includes(loc);
@@ -269,25 +269,25 @@ export function ZonasClient({
                   })}
                 </div>
                 {formLocalidades.length > 0 && (
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-xs text-slate-400 mt-1">
                     {formLocalidades.length} seleccionada(s)
                   </p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Observaciones</label>
                 <textarea
                   value={formObservaciones}
                   onChange={(e) => setFormObservaciones(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div className="flex gap-2 justify-end pt-2">
                 <button
                   type="button"
                   onClick={() => setModal(null)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                  className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
                 >
                   Cancelar
                 </button>
@@ -307,18 +307,18 @@ export function ZonasClient({
       {/* Confirmar eliminar */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-900">¿Eliminar zona?</h2>
-            <p className="mt-2 text-slate-600">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">¿Eliminar zona?</h2>
+            <p className="mt-2 text-slate-300">
               Esta acción no se puede deshacer. ¿Estás seguro?
             </p>
             {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
             )}
             <div className="flex gap-2 justify-end mt-6">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
               >
                 Cancelar
               </button>

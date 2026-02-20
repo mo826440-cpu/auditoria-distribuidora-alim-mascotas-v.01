@@ -294,16 +294,16 @@ export function ClientesClient({
   const formContent = (
     <>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Fecha de registro</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Fecha de registro</label>
         <input
           type="text"
           value={fechaActual}
           readOnly
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-600"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-400"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Nombre Representante *</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Nombre Representante *</label>
         <input
           type="text"
           value={formNombreRep}
@@ -311,11 +311,11 @@ export function ClientesClient({
           required
           maxLength={100}
           placeholder="Hasta 100 caracteres"
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Contacto * (E.164)</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Contacto * (E.164)</label>
         <input
           ref={refContacto}
           type="tel"
@@ -323,21 +323,21 @@ export function ClientesClient({
           onChange={(e) => setFormContacto(e.target.value)}
           required
           placeholder="+5493511234567"
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
         <input
           type="email"
           value={formEmail}
           onChange={(e) => setFormEmail(e.target.value)}
           placeholder="cliente@ejemplo.com"
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Código Interno *</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Código Interno *</label>
         <input
           ref={refCodigo}
           type="text"
@@ -346,11 +346,11 @@ export function ClientesClient({
           onChange={(e) => setFormCodigo(e.target.value.replace(/[^0-9\-]/g, ""))}
           required
           placeholder="Solo números y guiones (ej: 001-2024)"
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Nombre Comercio *</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Nombre Comercio *</label>
         <input
           type="text"
           value={formNombre}
@@ -358,11 +358,11 @@ export function ClientesClient({
           required
           maxLength={100}
           placeholder="Letras, espacios, puntos, guiones, números, acentos"
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">CUIT *</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">CUIT *</label>
         <input
           type="text"
           value={formCuit}
@@ -370,11 +370,11 @@ export function ClientesClient({
           required
           placeholder="20-12345678-3"
           maxLength={13}
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Zona</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Zona</label>
         <select
           ref={refZona}
           value={formZona}
@@ -383,7 +383,7 @@ export function ClientesClient({
             setFormLocalidad("");
             setTimeout(() => refLocalidad.current?.focus(), 0);
           }}
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         >
           <option value="">— Seleccionar —</option>
           {zonas.map((z) => (
@@ -394,7 +394,7 @@ export function ClientesClient({
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Localidad/Ciudad</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Localidad/Ciudad</label>
         <select
           ref={refLocalidad}
           value={formLocalidad}
@@ -402,7 +402,7 @@ export function ClientesClient({
             setFormLocalidad(e.target.value);
             setTimeout(() => refProvincia.current?.focus(), 0);
           }}
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         >
           <option value="">— Seleccionar —</option>
           {localidadesZona.map((loc) => (
@@ -413,7 +413,7 @@ export function ClientesClient({
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Provincia</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Provincia</label>
         <select
           ref={refProvincia}
           value={formProvincia}
@@ -421,7 +421,7 @@ export function ClientesClient({
             setFormProvincia(e.target.value);
             setTimeout(() => refCalle.current?.focus(), 0);
           }}
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         >
           {PROVINCIAS_ARGENTINA.map((p) => (
             <option key={p} value={p}>
@@ -431,7 +431,7 @@ export function ClientesClient({
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Calle *</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Calle *</label>
         <input
           ref={refCalle}
           type="text"
@@ -439,11 +439,11 @@ export function ClientesClient({
           onChange={(e) => setFormCalle(e.target.value.slice(0, 100))}
           required
           maxLength={100}
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Número *</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Número *</label>
         <input
           type="number"
           value={formNumero}
@@ -451,16 +451,16 @@ export function ClientesClient({
           required
           min={0}
           step={1}
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Observaciones</label>
         <textarea
           value={formObservaciones}
           onChange={(e) => setFormObservaciones(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div className="flex items-center gap-2">
@@ -471,7 +471,7 @@ export function ClientesClient({
           onChange={(e) => setFormActivo(e.target.checked)}
           className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
         />
-        <label htmlFor="activo-form" className="text-sm font-medium text-slate-700">
+        <label htmlFor="activo-form" className="text-sm font-medium text-slate-300">
           Estado Activo
         </label>
       </div>
@@ -489,17 +489,17 @@ export function ClientesClient({
         </button>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-slate-850 rounded-xl border border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-slate-800 border-b border-slate-700">
               <tr>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Código</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Cliente</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Contacto</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Ubicación</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Estado</th>
-                <th className="text-right py-3 px-4 font-medium text-slate-700">Acciones</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Código</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Cliente</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Contacto</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Ubicación</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Estado</th>
+                <th className="text-right py-3 px-4 font-medium text-slate-200">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -507,17 +507,17 @@ export function ClientesClient({
                 <tr>
                   <td
                     colSpan={6}
-                    className="py-8 px-4 text-center text-slate-500"
+                    className="py-8 px-4 text-center text-slate-400"
                   >
                     No hay clientes. {canEdit && "Creá uno para comenzar."}
                   </td>
                 </tr>
               ) : (
                 clientes.map((c) => (
-                  <tr key={c.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="py-3 px-4 font-medium">{c.codigo_interno ?? "—"}</td>
-                    <td className="py-3 px-4">{c.nombre ?? "—"}</td>
-                    <td className="py-3 px-4">{c.contacto ?? "—"}</td>
+                  <tr key={c.id} className="border-b border-slate-700 hover:bg-slate-700/50">
+                    <td className="py-3 px-4 font-medium text-slate-200">{c.codigo_interno ?? "—"}</td>
+                    <td className="py-3 px-4 text-slate-300">{c.nombre ?? "—"}</td>
+                    <td className="py-3 px-4 text-slate-300">{c.contacto ?? "—"}</td>
                     <td className="py-3 px-4">
                       {c.calle && c.numero != null && c.localidad && c.provincia ? (
                         <a
@@ -529,7 +529,7 @@ export function ClientesClient({
                           )}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-primary-600 hover:underline"
+                          className="inline-flex items-center gap-1 text-primary-400 hover:text-primary-300 hover:underline"
                           title="Ver en Google Maps"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -545,7 +545,7 @@ export function ClientesClient({
                     <td className="py-3 px-4">
                       <span
                         className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
-                          c.activo ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"
+                          c.activo ? "bg-green-900/50 text-green-300" : "bg-slate-700 text-slate-400"
                         }`}
                       >
                         {c.activo ? "Activo" : "Inactivo"}
@@ -554,7 +554,7 @@ export function ClientesClient({
                     <td className="py-3 px-4 text-right">
                       <button
                         onClick={() => handleVerDetalle(c)}
-                        className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                        className="p-1.5 text-slate-400 hover:text-primary-400 hover:bg-primary-900/40 rounded"
                         title="Ver detalle (PDF)"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -566,7 +566,7 @@ export function ClientesClient({
                         <>
                           <button
                             onClick={() => abrirEditar(c)}
-                            className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                            className="p-1.5 text-slate-400 hover:text-primary-400 hover:bg-primary-900/40 rounded"
                             title="Editar"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -575,7 +575,7 @@ export function ClientesClient({
                           </button>
                           <button
                             onClick={() => setDeleteConfirm(c.id)}
-                            className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded"
+                            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/40 rounded"
                             title="Eliminar"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -595,13 +595,13 @@ export function ClientesClient({
 
       {(modal === "nuevo" || modal === "editar") && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col max-h-[85vh]">
+          <div className="bg-slate-850 rounded-xl shadow-xl w-full max-w-md flex flex-col max-h-[85vh] border border-slate-700">
             <div className="flex-shrink-0 px-6 pt-6 pb-2">
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-slate-200">
                 {modal === "nuevo" ? "Crear cliente" : "Editar cliente"}
               </h2>
               {error && (
-                <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+                <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
               )}
             </div>
             <form
@@ -611,11 +611,11 @@ export function ClientesClient({
               <div className="flex-1 overflow-y-auto px-6 py-2 space-y-4 min-h-0">
                 {formContent}
               </div>
-              <div className="flex-shrink-0 flex gap-2 justify-end px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-xl">
+              <div className="flex-shrink-0 flex gap-2 justify-end px-6 py-4 border-t border-slate-700 bg-slate-800 rounded-b-xl">
                 <button
                   type="button"
                   onClick={() => setModal(null)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg"
+                  className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
                 >
                   Cancelar
                 </button>
@@ -634,18 +634,18 @@ export function ClientesClient({
 
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-900">¿Eliminar cliente?</h2>
-            <p className="mt-2 text-slate-600">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">¿Eliminar cliente?</h2>
+            <p className="mt-2 text-slate-300">
               Esta acción no se puede deshacer. Se eliminará el cliente y sus datos asociados.
             </p>
             {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
             )}
             <div className="flex gap-2 justify-end mt-6">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
               >
                 Cancelar
               </button>

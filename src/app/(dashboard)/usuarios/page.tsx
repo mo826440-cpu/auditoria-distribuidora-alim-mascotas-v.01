@@ -29,8 +29,8 @@ export default async function UsuariosPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Usuarios</h1>
-      <p className="mt-1 text-slate-600">Gestioná los usuarios del sistema</p>
+      <h1 className="text-2xl font-bold text-[var(--foreground)]">Usuarios</h1>
+      <p className="mt-1 text-slate-300">Gestioná los usuarios del sistema</p>
       <UsuariosClient usuarios={usuarios ?? []} currentUserId={user.id} />
     </div>
   );

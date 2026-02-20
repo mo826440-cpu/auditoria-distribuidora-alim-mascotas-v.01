@@ -53,8 +53,8 @@ export default async function TransportesReferenciasPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Transportes</h1>
-      <p className="mt-1 text-slate-600">Tipos de vehículos de referencia</p>
+      <h1 className="text-2xl font-bold text-[var(--foreground)]">Transportes</h1>
+      <p className="mt-1 text-slate-300">Tipos de vehículos de referencia</p>
       <TransportesClient transportes={transportesConUsuario} rol={usuario.rol} />
     </div>
   );

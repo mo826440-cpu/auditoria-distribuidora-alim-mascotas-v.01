@@ -167,14 +167,14 @@ export function VisitasClient({
 
   const estadoBadge = (estado: string) => {
     const styles: Record<string, string> = {
-      pendiente: "bg-amber-100 text-amber-700",
-      realizada: "bg-green-100 text-green-700",
-      cancelada: "bg-red-100 text-red-700",
-      reprogramada: "bg-blue-100 text-blue-700",
+      pendiente: "bg-amber-900/50 text-amber-300",
+      realizada: "bg-green-900/50 text-green-300",
+      cancelada: "bg-red-900/50 text-red-300",
+      reprogramada: "bg-blue-900/50 text-blue-300",
     };
     const label = ESTADOS.find((e) => e.value === estado)?.label || estado;
     return (
-      <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${styles[estado] || "bg-slate-100 text-slate-600"}`}>
+      <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${styles[estado] || "bg-slate-700 text-slate-400"}`}>
         {label}
       </span>
     );
@@ -191,18 +191,18 @@ export function VisitasClient({
         </button>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-slate-850 rounded-xl border border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-slate-800 border-b border-slate-700">
               <tr>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Fecha</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Cliente</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Vendedor</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Horario</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Estado</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Fecha</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Cliente</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Vendedor</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Horario</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Estado</th>
                 {canEdit && (
-                  <th className="text-right py-3 px-4 font-medium text-slate-700">Acciones</th>
+                  <th className="text-right py-3 px-4 font-medium text-slate-200">Acciones</th>
                 )}
               </tr>
             </thead>
@@ -211,7 +211,7 @@ export function VisitasClient({
                 <tr>
                   <td
                     colSpan={canEdit ? 6 : 5}
-                    className="py-8 px-4 text-center text-slate-500"
+                    className="py-8 px-4 text-center text-slate-400"
                   >
                     No hay visitas programadas. {canEdit && "Programá una para comenzar."}
                   </td>
@@ -222,11 +222,11 @@ export function VisitasClient({
                     <td className="py-3 px-4">
                       {new Date(v.fecha_visita + "T12:00:00").toLocaleDateString("es-AR")}
                     </td>
-                    <td className="py-3 px-4 font-medium">
+                    <td className="py-3 px-4 font-medium text-slate-200">
                       {v.clientes?.nombre || "—"}
                     </td>
-                    <td className="py-3 px-4">{v.vendedores?.nombre || "—"}</td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 text-slate-300">{v.vendedores?.nombre || "—"}</td>
+                    <td className="py-3 px-4 text-slate-300">
                       {formatTime(v.hora_inicio)} – {formatTime(v.hora_fin)}
                     </td>
                     <td className="py-3 px-4">{estadoBadge(v.estado)}</td>
@@ -234,7 +234,7 @@ export function VisitasClient({
                       <td className="py-3 px-4 text-right">
                         <button
                           onClick={() => abrirEditar(v)}
-                          className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                          className="p-1.5 text-slate-400 hover:text-primary-400 hover:bg-primary-900/40 rounded"
                           title="Editar"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -243,7 +243,7 @@ export function VisitasClient({
                         </button>
                         <button
                           onClick={() => setDeleteConfirm(v.id)}
-                          className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded ml-1"
+                          className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/40 rounded ml-1"
                           title="Eliminar"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -263,19 +263,19 @@ export function VisitasClient({
       {/* Modal Nuevo */}
       {modal === "nuevo" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold text-slate-900">Programar visita</h2>
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">Programar visita</h2>
             {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
             )}
             <form onSubmit={handleCrear} className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Cliente *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Cliente *</label>
                 <select
                   value={formCliente}
                   onChange={(e) => setFormCliente(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 >
                   <option value="">Seleccionar cliente</option>
                   {clientes.map((c) => (
@@ -284,12 +284,12 @@ export function VisitasClient({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Vendedor *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Vendedor *</label>
                 <select
                   value={formVendedor}
                   onChange={(e) => setFormVendedor(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 >
                   <option value="">Seleccionar vendedor</option>
                   {vendedores.map((v) => (
@@ -298,41 +298,41 @@ export function VisitasClient({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Fecha *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Fecha *</label>
                 <input
                   type="date"
                   value={formFecha}
                   onChange={(e) => setFormFecha(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Hora inicio</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora inicio</label>
                   <input
                     type="time"
                     value={formHoraInicio}
                     onChange={(e) => setFormHoraInicio(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Hora fin</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora fin</label>
                   <input
                     type="time"
                     value={formHoraFin}
                     onChange={(e) => setFormHoraFin(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Estado</label>
                 <select
                   value={formEstado}
                   onChange={(e) => setFormEstado(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 >
                   {ESTADOS.map((e) => (
                     <option key={e.value} value={e.value}>{e.label}</option>
@@ -340,20 +340,20 @@ export function VisitasClient({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Observaciones</label>
                 <textarea
                   value={formObservaciones}
                   onChange={(e) => setFormObservaciones(e.target.value)}
                   rows={3}
                   placeholder="Notas adicionales..."
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div className="flex gap-2 justify-end pt-2">
                 <button
                   type="button"
                   onClick={() => setModal(null)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                  className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
                 >
                   Cancelar
                 </button>
@@ -373,19 +373,19 @@ export function VisitasClient({
       {/* Modal Editar */}
       {modal === "editar" && visitaEdit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold text-slate-900">Editar visita</h2>
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">Editar visita</h2>
             {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
             )}
             <form onSubmit={handleEditar} className="mt-4 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Cliente *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Cliente *</label>
                 <select
                   value={formCliente}
                   onChange={(e) => setFormCliente(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 >
                   {clientes.map((c) => (
                     <option key={c.id} value={c.id}>{c.nombre}</option>
@@ -393,12 +393,12 @@ export function VisitasClient({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Vendedor *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Vendedor *</label>
                 <select
                   value={formVendedor}
                   onChange={(e) => setFormVendedor(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 >
                   {vendedores.map((v) => (
                     <option key={v.id} value={v.id}>{v.nombre}</option>
@@ -406,41 +406,41 @@ export function VisitasClient({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Fecha *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Fecha *</label>
                 <input
                   type="date"
                   value={formFecha}
                   onChange={(e) => setFormFecha(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Hora inicio</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora inicio</label>
                   <input
                     type="time"
                     value={formHoraInicio}
                     onChange={(e) => setFormHoraInicio(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Hora fin</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora fin</label>
                   <input
                     type="time"
                     value={formHoraFin}
                     onChange={(e) => setFormHoraFin(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Estado</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Estado</label>
                 <select
                   value={formEstado}
                   onChange={(e) => setFormEstado(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 >
                   {ESTADOS.map((e) => (
                     <option key={e.value} value={e.value}>{e.label}</option>
@@ -448,19 +448,19 @@ export function VisitasClient({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Observaciones</label>
                 <textarea
                   value={formObservaciones}
                   onChange={(e) => setFormObservaciones(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div className="flex gap-2 justify-end pt-2">
                 <button
                   type="button"
                   onClick={() => setModal(null)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                  className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
                 >
                   Cancelar
                 </button>
@@ -480,18 +480,18 @@ export function VisitasClient({
       {/* Confirmar eliminar */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-900">¿Eliminar visita?</h2>
-            <p className="mt-2 text-slate-600">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">¿Eliminar visita?</h2>
+            <p className="mt-2 text-slate-300">
               Esta acción no se puede deshacer. La visita programada será eliminada.
             </p>
             {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
             )}
             <div className="flex gap-2 justify-end mt-6">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
               >
                 Cancelar
               </button>

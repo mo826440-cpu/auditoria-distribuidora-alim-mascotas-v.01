@@ -29,12 +29,12 @@ export function DashboardHeader({
   }, []);
 
   return (
-    <header className="sticky top-0 z-20 h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4">
+    <header className="sticky top-0 z-20 h-14 bg-slate-850 border-b border-slate-700 flex items-center justify-between px-4">
       <div className="flex items-center gap-4">
-        <span className="text-sm font-medium text-slate-700">
+        <span className="text-sm font-medium text-slate-200">
           {userName || userEmail}
         </span>
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-slate-400">
           {new Date().toLocaleDateString("es-AR", {
             timeZone: "America/Argentina/Buenos_Aires",
           })}{" "}
@@ -44,7 +44,7 @@ export function DashboardHeader({
       <form action="/api/auth/signout" method="post">
         <button
           type="submit"
-          className="text-sm text-slate-600 hover:text-slate-900 font-medium"
+          className="text-sm text-slate-300 hover:text-white font-medium"
         >
           Cerrar sesión
         </button>

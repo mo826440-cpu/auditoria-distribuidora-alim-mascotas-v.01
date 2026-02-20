@@ -2,17 +2,17 @@ import Link from "next/link";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
+    <div className="min-h-screen flex flex-col bg-[var(--background)]">
       {/* Header */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b border-slate-700 bg-slate-850/95 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <span className="text-lg font-semibold text-slate-800">
+          <span className="text-lg font-semibold text-[var(--foreground)]">
             Auditorías Comerciales
           </span>
           <nav className="flex gap-4">
             <Link
               href="/login"
-              className="text-slate-600 hover:text-slate-900 font-medium transition-colors"
+              className="text-slate-300 hover:text-white font-medium transition-colors"
             >
               Iniciar sesión
             </Link>
@@ -29,14 +29,14 @@ export default function LandingPage() {
       {/* Hero */}
       <main className="flex-1 flex flex-col justify-center items-center px-4 py-16">
         <div className="max-w-2xl mx-auto text-center space-y-6">
-          <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl font-bold text-[var(--foreground)] tracking-tight">
             Auditorías comerciales para tu distribuidora
           </h1>
-          <p className="text-lg text-slate-600">
+          <p className="text-lg text-slate-300">
             Gestioná clientes, visitas y auditorías en campo. Simple, profesional
             y pensado para alimentación de mascotas.
           </p>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-400">
             Villa María, Córdoba
           </p>
 
@@ -86,7 +86,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 py-6 text-center text-sm text-slate-500">
+      <footer className="border-t border-slate-700 py-6 text-center text-sm text-slate-400">
         © {new Date().getFullYear()} Auditorías Comerciales
       </footer>
     </div>

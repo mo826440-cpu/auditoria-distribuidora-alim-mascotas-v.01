@@ -97,8 +97,8 @@ export default async function AuditoriasPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Auditorías</h1>
-      <p className="mt-1 text-slate-600">Registro de auditorías comerciales</p>
+      <h1 className="text-2xl font-bold text-[var(--foreground)]">Auditorías</h1>
+      <p className="mt-1 text-slate-300">Registro de auditorías comerciales</p>
       <AuditoriasClient
         auditorias={auditorias}
         clientes={clientes}

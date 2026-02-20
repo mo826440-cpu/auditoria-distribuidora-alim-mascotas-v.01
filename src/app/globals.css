@@ -1,20 +1,30 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Directivas de Tailwind: inyectan los estilos base del framework */
+
+/* Reset CSS + estilos base (h1, p, etc.) */
+/* Clases reutilizables (botones, cards, etc.) */
+/* Clases utilitarias (flex, p-4, text-center, etc.) */
+
+@tailwind base; 
+@tailwind components; 
+@tailwind utilities;  
 
 :root {
-  --foreground: #0d1321;
-  --background: #f8fafc;
+  /* --foreground: Color del texto del body (aplica a toda la app si no se sobrescribe) */
+  --foreground: #f1f5f9;
+  /* --background: Fondo del body (modo claro, desktop y móvil) */
+  --background: #0d1321;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground: #f1f5f9;
-    --background: #0d1321;
-  }
-}
+/* Modo oscuro deshabilitado: la app usa siempre tema oscuro (--foreground y --background en :root) */
 
+/* Estilos globales del body: usan variables CSS que cambian según modo claro/oscuro */
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--foreground);   /* Color del texto (definido en :root) */
+  background: var(--background); /* Fondo de la página (definido en :root) */
+}
+
+/* Opciones de select: texto oscuro sobre fondo claro para legibilidad en el dropdown nativo */
+select option {
+  background: #ffffff;
+  color: #0f172a;
 }

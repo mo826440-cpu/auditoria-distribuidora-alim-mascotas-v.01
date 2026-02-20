@@ -18,7 +18,7 @@ export function DashboardLayoutClient({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-[var(--background)] flex">
       <DashboardSidebar
         rol={rol}
         isOpen={sidebarOpen}

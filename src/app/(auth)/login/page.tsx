@@ -39,25 +39,25 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)] px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900">Iniciar sesión</h1>
-          <p className="mt-2 text-slate-600">
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">Iniciar sesión</h1>
+          <p className="mt-2 text-slate-300">
             Accedé a tu cuenta de auditorías
           </p>
         </div>
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-xl p-8 shadow-sm border border-slate-100 space-y-5"
+          className="bg-slate-850 rounded-xl p-8 shadow-sm border border-slate-700 space-y-5"
         >
           {error && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+            <div className="p-3 rounded-lg bg-red-900/50 text-red-300 text-sm">
               {error}
             </div>
           )}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1">
               Email
             </label>
             <input
@@ -67,12 +67,12 @@ function LoginForm() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="tu@email.com"
               required
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+              className="w-full px-4 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
               autoComplete="email"
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
               Contraseña
             </label>
             <input
@@ -82,7 +82,7 @@ function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Tu contraseña"
               required
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+              className="w-full px-4 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
               autoComplete="current-password"
             />
           </div>
@@ -94,15 +94,15 @@ function LoginForm() {
             {loading ? "Ingresando..." : "Iniciar sesión"}
           </button>
         </form>
-        <p className="text-center text-slate-600 text-sm">
+        <p className="text-center text-slate-300 text-sm">
           ¿No tenés cuenta?{" "}
-          <Link href="/registro" className="text-primary-500 hover:text-primary-600 font-medium">
+          <Link href="/registro" className="text-primary-400 hover:text-primary-300 font-medium">
             Crear cuenta
           </Link>
         </p>
         <Link
           href="/"
-          className="block text-center text-slate-500 hover:text-slate-700 text-sm"
+          className="block text-center text-slate-400 hover:text-slate-300 text-sm"
         >
           ← Volver al inicio
         </Link>
@@ -114,8 +114,8 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <p className="text-slate-500">Cargando...</p>
+      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+        <p className="text-slate-400">Cargando...</p>
       </div>
     }>
       <LoginForm />

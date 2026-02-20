@@ -383,19 +383,19 @@ export function AuditoriasClient({
         </button>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-slate-850 rounded-xl border border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-slate-800 border-b border-slate-700">
               <tr>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Fecha</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Cliente</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Vendedor</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Punt. cliente</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Punt. vendedor</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Clasificación</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Fecha</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Cliente</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Vendedor</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Punt. cliente</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Punt. vendedor</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Clasificación</th>
                 {canEdit && (
-                  <th className="text-right py-3 px-4 font-medium text-slate-700">Acciones</th>
+                  <th className="text-right py-3 px-4 font-medium text-slate-200">Acciones</th>
                 )}
               </tr>
             </thead>
@@ -404,26 +404,26 @@ export function AuditoriasClient({
                 <tr>
                   <td
                     colSpan={canEdit ? 7 : 6}
-                    className="py-8 px-4 text-center text-slate-500"
+                    className="py-8 px-4 text-center text-slate-400"
                   >
                     No hay auditorías registradas. {canEdit && "Creá una para comenzar."}
                   </td>
                 </tr>
               ) : (
                 auditorias.map((a) => (
-                  <tr key={a.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="py-3 px-4">
+                  <tr key={a.id} className="border-b border-slate-700 hover:bg-slate-700/50">
+                    <td className="py-3 px-4 text-slate-300">
                       {new Date(a.fecha + "T12:00:00").toLocaleDateString("es-AR")}
                     </td>
-                    <td className="py-3 px-4 font-medium">
+                    <td className="py-3 px-4 font-medium text-slate-200">
                       {(a.clientes as { nombre: string } | null)?.nombre ?? "—"}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 px-4 text-slate-300">
                       {(a.vendedores as { nombre: string } | null)?.nombre ?? "—"}
                     </td>
-                    <td className="py-3 px-4">{a.puntuacion_cliente ?? "—"}</td>
-                    <td className="py-3 px-4">{a.puntuacion_vendedor ?? "—"}</td>
-                    <td className="py-3 px-4">{clasificacionLabel(a.clasificacion_cliente)}</td>
+                    <td className="py-3 px-4 text-slate-300">{a.puntuacion_cliente ?? "—"}</td>
+                    <td className="py-3 px-4 text-slate-300">{a.puntuacion_vendedor ?? "—"}</td>
+                    <td className="py-3 px-4 text-slate-300">{clasificacionLabel(a.clasificacion_cliente)}</td>
                     {canEdit && (
                       <td className="py-3 px-4 text-right">
                         <button
@@ -438,7 +438,7 @@ export function AuditoriasClient({
                         {canDelete && (
                           <button
                             onClick={() => setDeleteConfirm(a.id)}
-                            className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded ml-1"
+                            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/40 rounded ml-1"
                             title="Eliminar"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -459,22 +459,22 @@ export function AuditoriasClient({
       {/* Modal Nuevo / Editar */}
       {(modal === "nuevo" || modal === "editar") && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 overflow-y-auto py-6 px-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-xl my-2 max-h-[calc(100vh-3rem)] overflow-y-auto">
-            <h2 className="text-lg font-semibold text-slate-900">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-2xl shadow-xl my-2 max-h-[calc(100vh-3rem)] overflow-y-auto border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">
               {modal === "nuevo" ? "Nueva auditoría" : "Editar auditoría"}
             </h2>
             {!clientes.length && (
-              <div className="mt-2 p-3 rounded bg-amber-50 text-amber-800 text-sm">
+              <div className="mt-2 p-3 rounded bg-amber-900/50 text-amber-300 text-sm">
                 No hay clientes. Creá al menos un cliente antes de registrar una auditoría.
               </div>
             )}
             {!vendedores.length && (
-              <div className="mt-2 p-3 rounded bg-amber-50 text-amber-800 text-sm">
+              <div className="mt-2 p-3 rounded bg-amber-900/50 text-amber-300 text-sm">
                 No hay vendedores. Creá al menos un vendedor antes de registrar una auditoría.
               </div>
             )}
             {error && (
-              <div className="mt-2 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
+              <div className="mt-2 p-3 rounded-lg bg-red-900/50 border border-red-800 text-red-300 text-sm font-medium">
                 {error}
               </div>
             )}
@@ -494,7 +494,7 @@ export function AuditoriasClient({
                       value={formCliente}
                       onChange={(e) => setFormCliente(e.target.value)}
                       required
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">Seleccionar</option>
                       {clientes.map((c) => (
@@ -508,7 +508,7 @@ export function AuditoriasClient({
                       value={formVendedor}
                       onChange={(e) => setFormVendedor(e.target.value)}
                       required
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">Seleccionar</option>
                       {vendedores.map((v) => (
@@ -523,7 +523,7 @@ export function AuditoriasClient({
                       value={formFecha}
                       onChange={(e) => setFormFecha(e.target.value)}
                       required
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     />
                   </div>
                   <div>
@@ -531,7 +531,7 @@ export function AuditoriasClient({
                     <select
                       value={formVisita}
                       onChange={(e) => setFormVisita(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">Ninguna</option>
                       {visitas.map((v) => (
@@ -546,7 +546,7 @@ export function AuditoriasClient({
                     <select
                       value={formTransportista}
                       onChange={(e) => setFormTransportista(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">Ninguno</option>
                       {transportistas.map((t) => (
@@ -570,7 +570,7 @@ export function AuditoriasClient({
                       onChange={(e) =>
                         setFormLocalLimpio(e.target.value === "" ? null : e.target.value === "true")
                       }
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">—</option>
                       <option value="true">Sí</option>
@@ -582,7 +582,7 @@ export function AuditoriasClient({
                     <select
                       value={formProductosExhibidos}
                       onChange={(e) => setFormProductosExhibidos(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">—</option>
                       {[1, 2, 3, 4, 5].map((n) => (
@@ -597,7 +597,7 @@ export function AuditoriasClient({
                       onChange={(e) =>
                         setFormStockSuficiente(e.target.value === "" ? null : e.target.value === "true")
                       }
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">—</option>
                       <option value="true">Sí</option>
@@ -609,7 +609,7 @@ export function AuditoriasClient({
                     <select
                       value={formRotacion}
                       onChange={(e) => setFormRotacion(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">—</option>
                       {[1, 2, 3, 4, 5].map((n) => (
@@ -624,7 +624,7 @@ export function AuditoriasClient({
                       onChange={(e) =>
                         setFormPlazosPago(e.target.value === "" ? null : e.target.value === "true")
                       }
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">—</option>
                       <option value="true">Sí</option>
@@ -641,8 +641,8 @@ export function AuditoriasClient({
                           onClick={() => toggleMetodoPago(m.value)}
                           className={`px-2 py-1 rounded text-xs font-medium ${
                             formMetodosPago.includes(m.value)
-                              ? "bg-primary-100 text-primary-700"
-                              : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                              ? "bg-primary-900/40 text-primary-300"
+                              : "bg-slate-700 text-slate-400 hover:bg-slate-600"
                           }`}
                         >
                           {m.label}
@@ -655,7 +655,7 @@ export function AuditoriasClient({
                     <select
                       value={formFrecuenciaEnvios}
                       onChange={(e) => setFormFrecuenciaEnvios(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">—</option>
                       {FRECUENCIA_ENVIOS.map((f) => (
@@ -668,7 +668,7 @@ export function AuditoriasClient({
                     <select
                       value={formPromedioKg}
                       onChange={(e) => setFormPromedioKg(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">—</option>
                       {PROMEDIO_KG_MES.map((p) => (
@@ -681,7 +681,7 @@ export function AuditoriasClient({
                     <select
                       value={formMontoCompra}
                       onChange={(e) => setFormMontoCompra(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">—</option>
                       {MONTO_COMPRA_MES.map((m) => (
@@ -700,28 +700,28 @@ export function AuditoriasClient({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Local limpio</label>
-                    <select value={formCondicionesLocal} onChange={(e) => setFormCondicionesLocal(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    <select value={formCondicionesLocal} onChange={(e) => setFormCondicionesLocal(e.target.value)} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none">
                       <option value="">—</option>
                       {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Iluminación</label>
-                    <select value={formCondicionesIluminacion} onChange={(e) => setFormCondicionesIluminacion(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    <select value={formCondicionesIluminacion} onChange={(e) => setFormCondicionesIluminacion(e.target.value)} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none">
                       <option value="">—</option>
                       {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Sector mascotas</label>
-                    <select value={formCondicionesSector} onChange={(e) => setFormCondicionesSector(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    <select value={formCondicionesSector} onChange={(e) => setFormCondicionesSector(e.target.value)} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none">
                       <option value="">—</option>
                       {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Normas higiene</label>
-                    <select value={formCondicionesHigiene} onChange={(e) => setFormCondicionesHigiene(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    <select value={formCondicionesHigiene} onChange={(e) => setFormCondicionesHigiene(e.target.value)} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none">
                       <option value="">—</option>
                       {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>
@@ -737,28 +737,28 @@ export function AuditoriasClient({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Productos visibles</label>
-                    <select value={formExhibicionVisible} onChange={(e) => setFormExhibicionVisible(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    <select value={formExhibicionVisible} onChange={(e) => setFormExhibicionVisible(e.target.value)} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none">
                       <option value="">—</option>
                       {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Ubicación estratégica</label>
-                    <select value={formExhibicionUbicacion} onChange={(e) => setFormExhibicionUbicacion(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    <select value={formExhibicionUbicacion} onChange={(e) => setFormExhibicionUbicacion(e.target.value)} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none">
                       <option value="">—</option>
                       {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Cartelería</label>
-                    <select value={formExhibicionCarteleria} onChange={(e) => setFormExhibicionCarteleria(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    <select value={formExhibicionCarteleria} onChange={(e) => setFormExhibicionCarteleria(e.target.value)} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none">
                       <option value="">—</option>
                       {[1,2,3,4,5].map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Vs. competencia</label>
-                    <select value={formExhibicionComparacion} onChange={(e) => setFormExhibicionComparacion(e.target.value)} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+                    <select value={formExhibicionComparacion} onChange={(e) => setFormExhibicionComparacion(e.target.value)} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none">
                       <option value="">—</option>
                       <option value="mejor">Mejor</option>
                       <option value="igual">Igual</option>
@@ -768,7 +768,7 @@ export function AuditoriasClient({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones exhibición</label>
-                  <textarea value={formExhibicionObs} onChange={(e) => setFormExhibicionObs(e.target.value)} rows={2} placeholder="..." className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                  <textarea value={formExhibicionObs} onChange={(e) => setFormExhibicionObs(e.target.value)} rows={2} placeholder="..." className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none" />
                 </div>
               </div>
 
@@ -780,15 +780,15 @@ export function AuditoriasClient({
                 <div className="space-y-2">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones stock y rotación</label>
-                    <textarea value={formStockObs} onChange={(e) => setFormStockObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                    <textarea value={formStockObs} onChange={(e) => setFormStockObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones precios y comercialización</label>
-                    <textarea value={formPreciosObs} onChange={(e) => setFormPreciosObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                    <textarea value={formPreciosObs} onChange={(e) => setFormPreciosObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones relación con distribuidora</label>
-                    <textarea value={formRelacionObs} onChange={(e) => setFormRelacionObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                    <textarea value={formRelacionObs} onChange={(e) => setFormRelacionObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none" />
                   </div>
                 </div>
               </div>
@@ -801,23 +801,23 @@ export function AuditoriasClient({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Gestión comercial</label>
-                    <textarea value={formGestionObs} onChange={(e) => setFormGestionObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                    <textarea value={formGestionObs} onChange={(e) => setFormGestionObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Conocimiento del producto</label>
-                    <textarea value={formConocimientoObs} onChange={(e) => setFormConocimientoObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                    <textarea value={formConocimientoObs} onChange={(e) => setFormConocimientoObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Relación con cliente</label>
-                    <textarea value={formRelacionClienteObs} onChange={(e) => setFormRelacionClienteObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                    <textarea value={formRelacionClienteObs} onChange={(e) => setFormRelacionClienteObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Cumplimiento administrativo</label>
-                    <textarea value={formCumplimientoObs} onChange={(e) => setFormCumplimientoObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                    <textarea value={formCumplimientoObs} onChange={(e) => setFormCumplimientoObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Logística y servicio</label>
-                    <textarea value={formLogisticaObs} onChange={(e) => setFormLogisticaObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                    <textarea value={formLogisticaObs} onChange={(e) => setFormLogisticaObs(e.target.value)} rows={2} className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none" />
                   </div>
                 </div>
               </div>
@@ -833,7 +833,7 @@ export function AuditoriasClient({
                     <select
                       value={formPuntuacionCliente}
                       onChange={(e) => setFormPuntuacionCliente(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">—</option>
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
@@ -846,7 +846,7 @@ export function AuditoriasClient({
                     <select
                       value={formPuntuacionVendedor}
                       onChange={(e) => setFormPuntuacionVendedor(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">—</option>
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
@@ -859,7 +859,7 @@ export function AuditoriasClient({
                     <select
                       value={formPuntuacionRepartidor}
                       onChange={(e) => setFormPuntuacionRepartidor(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">—</option>
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
@@ -873,7 +873,7 @@ export function AuditoriasClient({
                   <select
                     value={formClasificacion}
                     onChange={(e) => setFormClasificacion(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                   >
                     <option value="">—</option>
                     {CLASIFICACIONES.map((c) => (
@@ -890,7 +890,7 @@ export function AuditoriasClient({
                   onChange={(e) => setFormObservaciones(e.target.value)}
                   rows={3}
                   placeholder="Notas adicionales..."
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
 
@@ -898,7 +898,7 @@ export function AuditoriasClient({
                 <button
                   type="button"
                   onClick={() => setModal(null)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                  className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
                 >
                   Cancelar
                 </button>
@@ -918,18 +918,18 @@ export function AuditoriasClient({
       {/* Confirmar eliminar */}
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-900">¿Eliminar auditoría?</h2>
-            <p className="mt-2 text-slate-600">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">¿Eliminar auditoría?</h2>
+            <p className="mt-2 text-slate-300">
               Esta acción no se puede deshacer. El registro de auditoría será eliminado.
             </p>
             {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
             )}
             <div className="flex gap-2 justify-end mt-6">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
               >
                 Cancelar
               </button>

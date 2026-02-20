@@ -249,16 +249,16 @@ export function TransportistasClient({
   const formContent = (
     <>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Fecha de registro</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Fecha de registro</label>
         <input
           type="text"
           value={fechaActual}
           readOnly
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-600"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-400"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Nombre Transportista *</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Nombre Transportista *</label>
         <input
           type="text"
           value={formNombre}
@@ -266,32 +266,32 @@ export function TransportistasClient({
           required
           maxLength={100}
           placeholder="Hasta 100 caracteres"
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Contacto * (E.164)</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Contacto * (E.164)</label>
         <input
           type="tel"
           value={formContacto}
           onChange={(e) => setFormContacto(e.target.value)}
           required
           placeholder="+5493511234567"
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Email</label>
         <input
           type="email"
           value={formEmail}
           onChange={(e) => setFormEmail(e.target.value)}
           placeholder="transportista@ejemplo.com"
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Código Interno *</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Código Interno *</label>
         <input
           type="text"
           inputMode="numeric"
@@ -299,11 +299,11 @@ export function TransportistasClient({
           onChange={(e) => setFormCodigo(e.target.value.replace(/[^0-9\-]/g, ""))}
           required
           placeholder="Solo números y guiones"
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">DNI * (8 dígitos)</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">DNI * (8 dígitos)</label>
         <input
           type="text"
           inputMode="numeric"
@@ -312,12 +312,12 @@ export function TransportistasClient({
           required
           placeholder="35.145.907"
           maxLength={10}
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Zona (puede elegir varias)</label>
-        <div className="border border-slate-200 rounded-lg p-3 max-h-32 overflow-y-auto space-y-2">
+        <label className="block text-sm font-medium text-slate-300 mb-1">Zona (puede elegir varias)</label>
+        <div className="border border-slate-600 rounded-lg p-3 max-h-32 overflow-y-auto space-y-2 bg-slate-800">
           {zonas.map((z) => (
             <label key={z.id} className="flex items-center gap-2 cursor-pointer">
               <input
@@ -326,32 +326,32 @@ export function TransportistasClient({
                 onChange={() => toggleZona(z.id)}
                 className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
               />
-              <span className="text-sm">{z.nombre}</span>
+              <span className="text-sm text-slate-300">{z.nombre}</span>
             </label>
           ))}
           {zonas.length === 0 && (
-            <p className="text-sm text-slate-500">No hay zonas cargadas. Creá zonas en Referencias.</p>
+            <p className="text-sm text-slate-400">No hay zonas cargadas. Creá zonas en Referencias.</p>
           )}
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Residencia</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Residencia</label>
         <input
           type="text"
           value={formResidencia}
           onChange={(e) => setFormResidencia(e.target.value.slice(0, 100))}
           maxLength={100}
           placeholder="Letras, números, espacios, acentos, puntos, comas"
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">Observaciones</label>
+        <label className="block text-sm font-medium text-slate-300 mb-1">Observaciones</label>
         <textarea
           value={formObservaciones}
           onChange={(e) => setFormObservaciones(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none"
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
       </div>
       <div className="flex items-center gap-2">
@@ -362,7 +362,7 @@ export function TransportistasClient({
           onChange={(e) => setFormActivo(e.target.checked)}
           className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
         />
-        <label htmlFor="activo-transportista" className="text-sm font-medium text-slate-700">
+        <label htmlFor="activo-transportista" className="text-sm font-medium text-slate-300">
           Estado Activo
         </label>
       </div>
@@ -380,39 +380,39 @@ export function TransportistasClient({
         </button>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-slate-850 rounded-xl border border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
+            <thead className="bg-slate-800 border-b border-slate-700">
               <tr>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Código</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Transportista</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Contacto</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Residencia</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-700">Estado</th>
-                <th className="text-right py-3 px-4 font-medium text-slate-700">Acciones</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Código</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Transportista</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Contacto</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Residencia</th>
+                <th className="text-left py-3 px-4 font-medium text-slate-200">Estado</th>
+                <th className="text-right py-3 px-4 font-medium text-slate-200">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {transportistas.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 px-4 text-center text-slate-500">
+                  <td colSpan={6} className="py-8 px-4 text-center text-slate-400">
                     No hay transportistas. {canEdit && "Creá uno para comenzar."}
                   </td>
                 </tr>
               ) : (
                 transportistas.map((t) => (
-                  <tr key={t.id} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="py-3 px-4 font-medium">{t.codigo_interno ?? "—"}</td>
-                    <td className="py-3 px-4">{t.nombre ?? "—"}</td>
-                    <td className="py-3 px-4">{t.contacto ?? "—"}</td>
+                  <tr key={t.id} className="border-b border-slate-700 hover:bg-slate-700/50">
+                    <td className="py-3 px-4 font-medium text-slate-200">{t.codigo_interno ?? "—"}</td>
+                    <td className="py-3 px-4 text-slate-300">{t.nombre ?? "—"}</td>
+                    <td className="py-3 px-4 text-slate-300">{t.contacto ?? "—"}</td>
                     <td className="py-3 px-4">
                       {t.residencia ? (
                         <a
                           href={urlGoogleMaps(t.residencia)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-primary-600 hover:underline"
+                          className="inline-flex items-center gap-1 text-primary-400 hover:text-primary-300 hover:underline"
                           title="Ver ubicación"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -437,7 +437,7 @@ export function TransportistasClient({
                     <td className="py-3 px-4 text-right">
                       <button
                         onClick={() => handleVerDetalle(t)}
-                        className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                        className="p-1.5 text-slate-400 hover:text-primary-400 hover:bg-primary-900/40 rounded"
                         title="Ver detalle (PDF)"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -449,7 +449,7 @@ export function TransportistasClient({
                         <>
                           <button
                             onClick={() => abrirEditar(t)}
-                            className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                            className="p-1.5 text-slate-400 hover:text-primary-400 hover:bg-primary-900/40 rounded"
                             title="Editar"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -458,7 +458,7 @@ export function TransportistasClient({
                           </button>
                           <button
                             onClick={() => setDeleteConfirm(t.id)}
-                            className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded"
+                            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/40 rounded"
                             title="Eliminar"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -478,24 +478,24 @@ export function TransportistasClient({
 
       {(modal === "nuevo" || modal === "editar") && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md flex flex-col max-h-[85vh]">
+          <div className="bg-slate-850 rounded-xl shadow-xl w-full max-w-md flex flex-col max-h-[85vh] border border-slate-700">
             <div className="flex-shrink-0 px-6 pt-6 pb-2">
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-slate-200">
                 {modal === "nuevo" ? "Crear transportista" : "Editar transportista"}
               </h2>
               {error && (
-                <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+                <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
               )}
             </div>
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
               <div className="flex-1 overflow-y-auto px-6 py-2 space-y-4 min-h-0">
                 {formContent}
               </div>
-              <div className="flex-shrink-0 flex gap-2 justify-end px-6 py-4 border-t border-slate-200 bg-slate-50 rounded-b-xl">
+              <div className="flex-shrink-0 flex gap-2 justify-end px-6 py-4 border-t border-slate-700 bg-slate-800 rounded-b-xl">
                 <button
                   type="button"
                   onClick={() => setModal(null)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg"
+                  className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
                 >
                   Cancelar
                 </button>
@@ -514,18 +514,18 @@ export function TransportistasClient({
 
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-900">¿Eliminar transportista?</h2>
-            <p className="mt-2 text-slate-600">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200">¿Eliminar transportista?</h2>
+            <p className="mt-2 text-slate-300">
               Esta acción no se puede deshacer. Se eliminará el transportista y sus datos asociados.
             </p>
             {error && (
-              <div className="mt-2 p-2 rounded bg-red-50 text-red-600 text-sm">{error}</div>
+              <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
             )}
             <div className="flex gap-2 justify-end mt-6">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+                className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
               >
                 Cancelar
               </button>

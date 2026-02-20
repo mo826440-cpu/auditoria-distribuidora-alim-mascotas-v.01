@@ -75,8 +75,8 @@ export default async function ClientesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Clientes</h1>
-      <p className="mt-1 text-slate-600">Gestioná los puntos de venta y clientes</p>
+      <h1 className="text-2xl font-bold text-[var(--foreground)]">Clientes</h1>
+      <p className="mt-1 text-slate-300">Gestioná los puntos de venta y clientes</p>
       <ClientesClient
         clientes={clientes}
         zonas={zonas}

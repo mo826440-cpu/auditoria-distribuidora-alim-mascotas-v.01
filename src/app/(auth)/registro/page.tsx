@@ -72,11 +72,11 @@ export default function RegistroPage() {
 
   if (registroExitoso) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)] px-4">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-100 text-center space-y-6">
-            <div className="w-12 h-12 mx-auto rounded-full bg-green-100 flex items-center justify-center">
-              <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="bg-slate-850 rounded-xl p-8 shadow-sm border border-slate-700 text-center space-y-6">
+            <div className="w-12 h-12 mx-auto rounded-full bg-green-900/50 flex items-center justify-center">
+              <svg className="w-6 h-6 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
@@ -100,25 +100,25 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[var(--background)] px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-slate-900">Crear cuenta</h1>
-          <p className="mt-2 text-slate-600">
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">Crear cuenta</h1>
+          <p className="mt-2 text-slate-300">
             Registrate como administrador de tu comercio
           </p>
         </div>
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded-xl p-8 shadow-sm border border-slate-100 space-y-5"
+          className="bg-slate-850 rounded-xl p-8 shadow-sm border border-slate-700 space-y-5"
         >
           {error && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+            <div className="p-3 rounded-lg bg-red-900/50 text-red-300 text-sm">
               {error}
             </div>
           )}
           <div>
-            <label htmlFor="nombre" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="nombre" className="block text-sm font-medium text-slate-300 mb-1">
               Nombre
             </label>
             <input
@@ -127,12 +127,12 @@ export default function RegistroPage() {
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="Tu nombre"
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+              className="w-full px-4 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
               autoComplete="name"
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1">
               Email
             </label>
             <input
@@ -142,12 +142,12 @@ export default function RegistroPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="tu@email.com"
               required
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+              className="w-full px-4 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
               autoComplete="email"
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-1">
               Contraseña
             </label>
             <input
@@ -158,7 +158,7 @@ export default function RegistroPage() {
               placeholder="Mínimo 6 caracteres"
               required
               minLength={6}
-              className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+              className="w-full px-4 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
               autoComplete="new-password"
             />
           </div>
@@ -170,15 +170,15 @@ export default function RegistroPage() {
             {loading ? "Registrando..." : "Crear cuenta"}
           </button>
         </form>
-        <p className="text-center text-slate-600 text-sm">
+        <p className="text-center text-slate-300 text-sm">
           ¿Ya tenés cuenta?{" "}
-          <Link href="/login" className="text-primary-500 hover:text-primary-600 font-medium">
+          <Link href="/login" className="text-primary-400 hover:text-primary-300 font-medium">
             Iniciar sesión
           </Link>
         </p>
         <Link
           href="/"
-          className="block text-center text-slate-500 hover:text-slate-700 text-sm"
+          className="block text-center text-slate-400 hover:text-slate-300 text-sm"
         >
           ← Volver al inicio
         </Link>

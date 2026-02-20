@@ -52,8 +52,8 @@ export default async function ZonasPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Zonas</h1>
-      <p className="mt-1 text-slate-600">Localidades y ciudades de Córdoba por zona</p>
+      <h1 className="text-2xl font-bold text-[var(--foreground)]">Zonas</h1>
+      <p className="mt-1 text-slate-300">Localidades y ciudades de Córdoba por zona</p>
       <ZonasClient
         zonas={zonasConUsuario}
         usuarioNombre={usuario.nombre}
