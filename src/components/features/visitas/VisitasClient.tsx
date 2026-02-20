@@ -3,10 +3,31 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { imprimirComoPdf, contenidoPdfVisita } from "@/lib/pdfUtils";
+import { imprimirComoPdf, contenidoPdfVisitaCompleto } from "@/lib/pdfUtils";
+import { ESTADOS_VISITA, ESTADO_LEGEND_BG_VISITA } from "@/data/estadosVisita";
 
-type Cliente = { id: string; nombre: string };
-type Vendedor = { id: string; nombre: string };
+type Zona = { id: string; nombre: string };
+type Vendedor = { id: string; nombre: string; id_zonas?: string[] | null };
+
+type ClienteFull = {
+  id: string;
+  nombre: string;
+  nombre_representante?: string | null;
+  contacto?: string | null;
+  email?: string | null;
+  codigo_interno?: string | null;
+  cuit?: string | null;
+  id_zona?: string | null;
+  id_vendedor_frecuente?: string | null;
+  zona_nombre?: string | null;
+  vendedor_nombre?: string | null;
+  transportista_nombre?: string | null;
+  localidad?: string | null;
+  provincia?: string | null;
+  calle?: string | null;
+  numero?: number | null;
+  observaciones?: string | null;
+};
 
 type Visita = {
   id: string;
@@ -21,12 +42,13 @@ type Visita = {
   vendedores: { nombre: string } | null;
 };
 
-const ESTADOS = [
-  { value: "pendiente", label: "Pendiente" },
-  { value: "realizada", label: "Realizada" },
-  { value: "cancelada", label: "Cancelada" },
-  { value: "reprogramada", label: "Reprogramada" },
-];
+function urlGoogleMaps(localidad: string, provincia: string, calle: string, numero: number): string {
+  const direccion = `${localidad}, ${provincia}, ${calle} ${numero}, Argentina`;
+  const q = encodeURIComponent(direccion);
+  return `https://www.google.com/maps/search/?api=1&query=${q}`;
+}
+
+const ESTADOS = ESTADOS_VISITA;
 
 const DIAS_SEMANA = ["LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB", "DOM"];
 const MESES = [
@@ -53,12 +75,7 @@ const ESTADO_COLORS: Record<string, string> = {
   reprogramada: "bg-orange-500/80 text-orange-950",
 };
 
-const ESTADO_LEGEND_BG: Record<string, string> = {
-  pendiente: "bg-yellow-400",
-  realizada: "bg-green-500",
-  cancelada: "bg-red-400",
-  reprogramada: "bg-orange-500",
-};
+const ESTADO_LEGEND_BG = ESTADO_LEGEND_BG_VISITA;
 
 function buildCalendarGrid(mes: number, anio: number): Date[][] {
   const primerDia = new Date(anio, mes - 1, 1);
@@ -82,29 +99,35 @@ export function VisitasClient({
   visitas,
   clientes,
   vendedores,
+  zonas,
   rol,
   mes,
   anio,
 }: {
   visitas: Visita[];
-  clientes: Cliente[];
+  clientes: ClienteFull[];
   vendedores: Vendedor[];
+  zonas: Zona[];
   rol: string;
   mes: number;
   anio: number;
 }) {
-  const [modal, setModal] = useState<"nuevo" | "editar" | null>(null);
+  const [modal, setModal] = useState<"nuevo" | "editar" | "detalle" | null>(null);
   const [visitaEdit, setVisitaEdit] = useState<Visita | null>(null);
+  const [visitaDetalle, setVisitaDetalle] = useState<Visita | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [formZona, setFormZona] = useState("");
   const [formCliente, setFormCliente] = useState("");
-  const [formVendedor, setFormVendedor] = useState("");
   const [formFecha, setFormFecha] = useState("");
   const [formHoraInicio, setFormHoraInicio] = useState("");
   const [formHoraFin, setFormHoraFin] = useState("");
   const [formObservaciones, setFormObservaciones] = useState("");
   const [formEstado, setFormEstado] = useState("pendiente");
+
+  const clientesPorZona = formZona ? clientes.filter((c) => c.id_zona === formZona) : [];
+  const clientesMap = useMemo(() => new Map(clientes.map((c) => [c.id, c])), [clientes]);
 
   const router = useRouter();
   const canEdit = ["administrador", "auditor"].includes(rol);
@@ -133,9 +156,16 @@ export function VisitasClient({
   const mesSiguiente = mes === 12 ? 1 : mes + 1;
   const anioSiguiente = mes === 12 ? anio + 1 : anio;
 
+  function getIdVendedorParaCliente(clienteId: string, zonaId: string): string | null {
+    const cli = clientesMap.get(clienteId);
+    if (cli?.id_vendedor_frecuente) return cli.id_vendedor_frecuente;
+    const vendedorZona = vendedores.find((v) => (v.id_zonas ?? []).includes(zonaId));
+    return vendedorZona?.id ?? null;
+  }
+
   function abrirNuevo() {
+    setFormZona("");
     setFormCliente("");
-    setFormVendedor("");
     setFormFecha(new Date().toISOString().slice(0, 10));
     setFormHoraInicio("");
     setFormHoraFin("");
@@ -147,8 +177,9 @@ export function VisitasClient({
 
   function abrirEditar(v: Visita) {
     setVisitaEdit(v);
+    const cli = clientesMap.get(v.id_cliente);
+    setFormZona(cli?.id_zona ?? "");
     setFormCliente(v.id_cliente);
-    setFormVendedor(v.id_vendedor);
     setFormFecha(v.fecha_visita);
     setFormHoraInicio(toTimeInput(v.hora_inicio));
     setFormHoraFin(toTimeInput(v.hora_fin));
@@ -158,9 +189,19 @@ export function VisitasClient({
     setModal("editar");
   }
 
+  function abrirDetalle(v: Visita) {
+    setVisitaDetalle(v);
+    setModal("detalle");
+  }
+
   async function handleCrear(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    const idVendedor = getIdVendedorParaCliente(formCliente, formZona);
+    if (!idVendedor) {
+      setError("El cliente debe tener vendedor frecuente o la zona debe tener vendedores asignados");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/visitas", {
@@ -168,7 +209,7 @@ export function VisitasClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id_cliente: formCliente,
-          id_vendedor: formVendedor,
+          id_vendedor: idVendedor,
           fecha_visita: formFecha,
           hora_inicio: formHoraInicio || undefined,
           hora_fin: formHoraFin || undefined,
@@ -192,6 +233,11 @@ export function VisitasClient({
     e.preventDefault();
     if (!visitaEdit) return;
     setError(null);
+    const idVendedor = getIdVendedorParaCliente(formCliente, formZona);
+    if (!idVendedor) {
+      setError("El cliente debe tener vendedor frecuente o la zona debe tener vendedores asignados");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch(`/api/visitas/${visitaEdit.id}`, {
@@ -199,7 +245,7 @@ export function VisitasClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id_cliente: formCliente,
-          id_vendedor: formVendedor,
+          id_vendedor: idVendedor,
           fecha_visita: formFecha,
           hora_inicio: formHoraInicio || undefined,
           hora_fin: formHoraFin || undefined,
@@ -220,7 +266,7 @@ export function VisitasClient({
   }
 
   return (
-    <div className="mt-6 flex gap-4">
+    <div className="mt-6">
       <div className="flex-1 min-w-0">
         {/* Header calendario */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
@@ -311,34 +357,37 @@ export function VisitasClient({
                               {formatTime(v.hora_inicio)} – {formatTime(v.hora_fin)}
                             </span>
                             <div className="flex gap-0.5 shrink-0">
+                              {(() => {
+                                const cli = clientesMap.get(v.id_cliente);
+                                const tieneUbicacion = cli?.calle && cli?.numero != null && cli?.localidad && cli?.provincia;
+                                return tieneUbicacion ? (
+                                  <a
+                                    href={urlGoogleMaps(cli!.localidad!, cli!.provincia!, cli!.calle!, cli!.numero!)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      const url = urlGoogleMaps(cli!.localidad!, cli!.provincia!, cli!.calle!, cli!.numero!);
+                                      const w = window.open(url, "_blank", "noopener,noreferrer");
+                                      if (!w) window.location.href = url;
+                                    }}
+                                    className="p-0.5 rounded hover:bg-black/20"
+                                    title="Ubicación"
+                                  >
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                  </a>
+                                ) : null;
+                              })()}
                               <button
-                                onClick={() => abrirEditar(v)}
+                                onClick={() => abrirDetalle(v)}
                                 className="p-0.5 rounded hover:bg-black/20"
-                                title="Editar"
+                                title="Ver detalles"
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  const fechaStr = new Date().toLocaleString("es-AR");
-                                  const contenido = contenidoPdfVisita(
-                                    v.fecha_visita,
-                                    v.clientes?.nombre || "—",
-                                    v.vendedores?.nombre || "—",
-                                    formatTime(v.hora_inicio),
-                                    formatTime(v.hora_fin),
-                                    v.observaciones || "",
-                                    ESTADOS.find((e) => e.value === v.estado)?.label || v.estado
-                                  );
-                                  imprimirComoPdf(`Visita - ${v.clientes?.nombre || "—"}`, contenido, fechaStr);
-                                }}
-                                className="p-0.5 rounded hover:bg-black/20"
-                                title="Ver detalle (PDF)"
-                              >
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                               </button>
                             </div>
@@ -354,23 +403,6 @@ export function VisitasClient({
         </div>
       </div>
 
-      {/* Leyenda */}
-      <div className="w-44 shrink-0">
-        <div className="bg-slate-850 rounded-xl border border-slate-700 p-4">
-          <h3 className="text-sm font-semibold text-slate-200 mb-3">Estado</h3>
-          <div className="space-y-2">
-            {ESTADOS.map((e) => (
-              <div key={e.value} className="flex items-center gap-2">
-                <div
-                  className={`w-4 h-4 rounded shrink-0 ${ESTADO_LEGEND_BG[e.value] || "bg-slate-600"}`}
-                />
-                <span className="text-sm text-slate-300">{e.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Modal Nuevo */}
       {modal === "nuevo" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -381,74 +413,85 @@ export function VisitasClient({
             )}
             <form onSubmit={handleCrear} className="mt-4 space-y-4">
               <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Zona *</label>
+                <select
+                  value={formZona}
+                  onChange={(e) => {
+                    setFormZona(e.target.value);
+                    setFormCliente("");
+                  }}
+                  required
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
+                >
+                  <option value="">Seleccionar zona</option>
+                  {zonas.map((z) => (
+                    <option key={z.id} value={z.id}>{z.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Cliente *</label>
                 <select
                   value={formCliente}
                   onChange={(e) => setFormCliente(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
                 >
-                  <option value="">Seleccionar cliente</option>
-                  {clientes.map((c) => (
+                  <option value="">{formZona ? "Seleccionar cliente" : "Seleccionar zona primero"}</option>
+                  {clientesPorZona.map((c) => (
                     <option key={c.id} value={c.id}>{c.nombre}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Vendedor *</label>
-                <select
-                  value={formVendedor}
-                  onChange={(e) => setFormVendedor(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-                >
-                  <option value="">Seleccionar vendedor</option>
-                  {vendedores.map((v) => (
-                    <option key={v.id} value={v.id}>{v.nombre}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Fecha *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Fecha estimada *</label>
                 <input
                   type="date"
                   value={formFecha}
                   onChange={(e) => setFormFecha(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora inicio</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora Inicio Estimada *</label>
                   <input
                     type="time"
                     value={formHoraInicio}
                     onChange={(e) => setFormHoraInicio(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                    required
+                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora fin</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora Fin Estimada *</label>
                   <input
                     type="time"
                     value={formHoraFin}
                     onChange={(e) => setFormHoraFin(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                    required
+                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Estado</label>
-                <select
-                  value={formEstado}
-                  onChange={(e) => setFormEstado(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-                >
+                <label className="block text-sm font-medium text-slate-300 mb-1">Estado *</label>
+                <div className="space-y-2 pt-1">
                   {ESTADOS.map((e) => (
-                    <option key={e.value} value={e.value}>{e.label}</option>
+                    <label key={e.value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="estado"
+                        value={e.value}
+                        checked={formEstado === e.value}
+                        onChange={() => setFormEstado(e.value)}
+                        className="rounded-full border-slate-500 text-primary-500 focus:ring-primary-500"
+                      />
+                      <span className="text-slate-300">{e.label}</span>
+                    </label>
                   ))}
-                </select>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Observaciones</label>
@@ -491,33 +534,39 @@ export function VisitasClient({
             )}
             <form onSubmit={handleEditar} className="mt-4 space-y-4">
               <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Zona *</label>
+                <select
+                  value={formZona}
+                  onChange={(e) => {
+                    setFormZona(e.target.value);
+                    const clientesNuevaZona = clientes.filter((c) => c.id_zona === e.target.value);
+                    if (!clientesNuevaZona.some((c) => c.id === formCliente)) setFormCliente("");
+                  }}
+                  required
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
+                >
+                  <option value="">Seleccionar zona</option>
+                  {zonas.map((z) => (
+                    <option key={z.id} value={z.id}>{z.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Cliente *</label>
                 <select
                   value={formCliente}
                   onChange={(e) => setFormCliente(e.target.value)}
                   required
-                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
                 >
-                  {clientes.map((c) => (
+                  <option value="">{formZona ? "Seleccionar cliente" : "Seleccionar zona primero"}</option>
+                  {clientesPorZona.map((c) => (
                     <option key={c.id} value={c.id}>{c.nombre}</option>
                   ))}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Vendedor *</label>
-                <select
-                  value={formVendedor}
-                  onChange={(e) => setFormVendedor(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-                >
-                  {vendedores.map((v) => (
-                    <option key={v.id} value={v.id}>{v.nombre}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Fecha *</label>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Fecha estimada *</label>
                 <input
                   type="date"
                   value={formFecha}
@@ -528,35 +577,43 @@ export function VisitasClient({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora inicio</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora Inicio Estimada *</label>
                   <input
                     type="time"
                     value={formHoraInicio}
                     onChange={(e) => setFormHoraInicio(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                    required
+                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora fin</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-1">Hora Fin Estimada *</label>
                   <input
                     type="time"
                     value={formHoraFin}
                     onChange={(e) => setFormHoraFin(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                    required
+                    className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1">Estado</label>
-                <select
-                  value={formEstado}
-                  onChange={(e) => setFormEstado(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-                >
+                <label className="block text-sm font-medium text-slate-300 mb-1">Estado *</label>
+                <div className="space-y-2 pt-1">
                   {ESTADOS.map((e) => (
-                    <option key={e.value} value={e.value}>{e.label}</option>
+                    <label key={e.value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="estado-editar"
+                        value={e.value}
+                        checked={formEstado === e.value}
+                        onChange={() => setFormEstado(e.value)}
+                        className="rounded-full border-slate-500 text-primary-500 focus:ring-primary-500"
+                      />
+                      <span className="text-slate-300">{e.label}</span>
+                    </label>
                   ))}
-                </select>
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-1">Observaciones</label>
@@ -564,7 +621,7 @@ export function VisitasClient({
                   value={formObservaciones}
                   onChange={(e) => setFormObservaciones(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
                 />
               </div>
               <div className="flex gap-2 justify-end pt-2">
@@ -587,6 +644,129 @@ export function VisitasClient({
           </div>
         </div>
       )}
+
+      {/* Modal Detalle */}
+      {modal === "detalle" && visitaDetalle && (() => {
+        const cli = clientesMap.get(visitaDetalle.id_cliente);
+        const tieneUbicacion = cli?.calle && cli?.numero != null && cli?.localidad && cli?.provincia;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="bg-slate-850 rounded-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col border border-slate-700 shadow-xl">
+              <div className="flex-shrink-0 px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-slate-200">Detalle de visita</h2>
+                <div className="flex items-center gap-2">
+                  {tieneUbicacion && (
+                    <a
+                      href={urlGoogleMaps(cli!.localidad!, cli!.provincia!, cli!.calle!, cli!.numero!)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const url = urlGoogleMaps(cli!.localidad!, cli!.provincia!, cli!.calle!, cli!.numero!);
+                        const w = window.open(url, "_blank", "noopener,noreferrer");
+                        if (!w) window.location.href = url;
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg text-sm"
+                      title="Ver ubicación"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Ubicación
+                    </a>
+                  )}
+                  <button
+                    onClick={() => {
+                      const fechaStr = new Date().toLocaleString("es-AR");
+                      const contenido = contenidoPdfVisitaCompleto(
+                        cli ?? { nombre: visitaDetalle.clientes?.nombre ?? "—" },
+                        {
+                          fecha_visita: visitaDetalle.fecha_visita,
+                          hora_inicio: visitaDetalle.hora_inicio,
+                          hora_fin: visitaDetalle.hora_fin,
+                          estado: ESTADOS.find((e) => e.value === visitaDetalle.estado)?.label ?? visitaDetalle.estado,
+                          observaciones: visitaDetalle.observaciones,
+                        }
+                      );
+                      imprimirComoPdf(`Visita - ${visitaDetalle.clientes?.nombre ?? "—"}`, contenido, fechaStr);
+                    }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg text-sm"
+                    title="Ver detalle (PDF)"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    PDF
+                  </button>
+                  {canEdit && (
+                    <button
+                      onClick={() => {
+                        setModal(null);
+                        abrirEditar(visitaDetalle);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg text-sm"
+                      title="Editar"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                      Editar
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setModal(null)}
+                    className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg"
+                    aria-label="Cerrar"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+                {cli && (
+                  <>
+                    <section>
+                      <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">Datos del cliente</h3>
+                      <dl className="space-y-2 text-sm">
+                        <div><dt className="text-slate-500 inline">Nombre comercio:</dt> <dd className="text-slate-200 inline ml-1">{cli.nombre ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Nombre representante:</dt> <dd className="text-slate-200 inline ml-1">{cli.nombre_representante ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Contacto:</dt> <dd className="text-slate-200 inline ml-1">{cli.contacto ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Email:</dt> <dd className="text-slate-200 inline ml-1">{cli.email ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Código interno:</dt> <dd className="text-slate-200 inline ml-1">{cli.codigo_interno ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">CUIT:</dt> <dd className="text-slate-200 inline ml-1">{cli.cuit ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Zona:</dt> <dd className="text-slate-200 inline ml-1">{cli.zona_nombre ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Localidad/Ciudad:</dt> <dd className="text-slate-200 inline ml-1">{cli.localidad ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Provincia:</dt> <dd className="text-slate-200 inline ml-1">{cli.provincia ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Calle:</dt> <dd className="text-slate-200 inline ml-1">{cli.calle ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Número:</dt> <dd className="text-slate-200 inline ml-1">{cli.numero ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Vendedor frecuente:</dt> <dd className="text-slate-200 inline ml-1">{cli.vendedor_nombre ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Transportista frecuente:</dt> <dd className="text-slate-200 inline ml-1">{cli.transportista_nombre ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Observaciones:</dt> <dd className="text-slate-200 inline ml-1">{cli.observaciones ?? "—"}</dd></div>
+                      </dl>
+                    </section>
+                    <section>
+                      <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">Datos de la visita</h3>
+                      <dl className="space-y-2 text-sm">
+                        <div><dt className="text-slate-500 inline">Fecha estimada:</dt> <dd className="text-slate-200 inline ml-1">{new Date(visitaDetalle.fecha_visita + "T12:00:00").toLocaleDateString("es-AR")}</dd></div>
+                        <div><dt className="text-slate-500 inline">Hora inicio estimada:</dt> <dd className="text-slate-200 inline ml-1">{formatTime(visitaDetalle.hora_inicio)}</dd></div>
+                        <div><dt className="text-slate-500 inline">Hora fin estimada:</dt> <dd className="text-slate-200 inline ml-1">{formatTime(visitaDetalle.hora_fin)}</dd></div>
+                        <div><dt className="text-slate-500 inline">Estado:</dt> <dd className="text-slate-200 inline ml-1">{ESTADOS.find((e) => e.value === visitaDetalle.estado)?.label ?? visitaDetalle.estado}</dd></div>
+                        <div><dt className="text-slate-500 inline">Observaciones:</dt> <dd className="text-slate-200 inline ml-1">{visitaDetalle.observaciones ?? "—"}</dd></div>
+                      </dl>
+                    </section>
+                  </>
+                )}
+                {!cli && (
+                  <p className="text-slate-400 text-sm">No se encontraron datos del cliente.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

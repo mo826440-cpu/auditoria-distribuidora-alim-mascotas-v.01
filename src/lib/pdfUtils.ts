@@ -176,6 +176,69 @@ export function contenidoPdfVisita(
   `;
 }
 
+export function contenidoPdfVisitaCompleto(
+  cliente: {
+    nombre: string;
+    nombre_representante?: string | null;
+    contacto?: string | null;
+    email?: string | null;
+    codigo_interno?: string | null;
+    cuit?: string | null;
+    zona_nombre?: string | null;
+    localidad?: string | null;
+    provincia?: string | null;
+    calle?: string | null;
+    numero?: number | null;
+    vendedor_nombre?: string | null;
+    transportista_nombre?: string | null;
+    observaciones?: string | null;
+  },
+  visita: {
+    fecha_visita: string;
+    hora_inicio: string | null;
+    hora_fin: string | null;
+    estado: string;
+    observaciones: string | null;
+  }
+) {
+  const fechaStr = new Date(visita.fecha_visita + "T12:00:00").toLocaleDateString("es-AR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  const horaInicio = visita.hora_inicio ? visita.hora_inicio.replace(/^(\d+):(\d+).*/, "$1:$2") : "—";
+  const horaFin = visita.hora_fin ? visita.hora_fin.replace(/^(\d+):(\d+).*/, "$1:$2") : "—";
+  const estadoLabel = visita.estado.charAt(0).toUpperCase() + visita.estado.slice(1);
+
+  const fila = (label: string, val: string) =>
+    `<div style="margin-bottom:5px;font-size:12px;"><span style="font-weight:bold;color:#374151;">${esc(label)}:</span> ${esc(val)}</div>`;
+
+  return `
+    <h1 style="font-size:16px;margin-bottom:12px;">Detalle de Visita y Cliente</h1>
+    <h2 style="font-size:12px;margin:10px 0 6px;color:#6b7280;">Datos del cliente</h2>
+    ${fila("Nombre comercio", cliente.nombre || "—")}
+    ${fila("Nombre representante", cliente.nombre_representante || "—")}
+    ${fila("Contacto", cliente.contacto || "—")}
+    ${fila("Email", cliente.email || "—")}
+    ${fila("Código interno", cliente.codigo_interno || "—")}
+    ${fila("CUIT", cliente.cuit || "—")}
+    ${fila("Zona", cliente.zona_nombre || "—")}
+    ${fila("Localidad/Ciudad", cliente.localidad || "—")}
+    ${fila("Provincia", cliente.provincia || "—")}
+    ${fila("Calle", cliente.calle || "—")}
+    ${fila("Número", String(cliente.numero ?? "—"))}
+    ${fila("Vendedor frecuente", cliente.vendedor_nombre || "—")}
+    ${fila("Transportista frecuente", cliente.transportista_nombre || "—")}
+    ${fila("Observaciones cliente", cliente.observaciones || "—")}
+    <h2 style="font-size:12px;margin:10px 0 6px;color:#6b7280;">Datos de la visita</h2>
+    ${fila("Fecha estimada", fechaStr)}
+    ${fila("Hora inicio estimada", horaInicio)}
+    ${fila("Hora fin estimada", horaFin)}
+    ${fila("Estado", estadoLabel)}
+    ${fila("Observaciones visita", visita.observaciones || "—")}
+  `;
+}
+
 export function contenidoPdfTransporte(
   fechaHora: string,
   tipo: string,

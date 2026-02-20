@@ -30,6 +30,12 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+  if (!hora_inicio || !hora_fin) {
+    return NextResponse.json(
+      { error: "Hora inicio y hora fin son obligatorias" },
+      { status: 400 }
+    );
+  }
 
   const { data, error } = await supabase
     .from("programacion_visitas")
