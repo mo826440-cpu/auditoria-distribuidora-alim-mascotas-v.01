@@ -25,7 +25,12 @@ export function DashboardLayoutClient({
         onToggle={() => setSidebarOpen(!sidebarOpen)}
       />
       <div className="flex-1 flex flex-col min-w-0">
-        <DashboardHeader userEmail={userEmail} userName={userName} />
+        <DashboardHeader
+          userEmail={userEmail}
+          userName={userName}
+          sidebarOpen={sidebarOpen}
+          onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        />
         <main className="flex-1 p-4 lg:p-6">{children}</main>
       </div>
     </div>

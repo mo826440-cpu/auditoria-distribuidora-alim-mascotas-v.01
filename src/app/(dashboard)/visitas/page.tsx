@@ -12,10 +12,26 @@ function getMonthRange(mes: number, anio: number) {
   };
 }
 
+function getWeekRange() {
+  const hoy = new Date();
+  const dia = hoy.getDay();
+  const offsetLunes = dia === 0 ? -6 : 1 - dia;
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + offsetLunes);
+  const domingo = new Date(lunes);
+  domingo.setDate(lunes.getDate() + 6);
+  return {
+    desde: lunes.toISOString().slice(0, 10),
+    hasta: domingo.toISOString().slice(0, 10),
+    mes: hoy.getMonth() + 1,
+    anio: hoy.getFullYear(),
+  };
+}
+
 export default async function VisitasPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ mes?: string; anio?: string }>;
+  searchParams?: Promise<{ mes?: string; anio?: string; vista?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -40,7 +56,24 @@ export default async function VisitasPage({
   const now = new Date();
   const mes = Math.max(1, Math.min(12, params?.mes ? parseInt(params.mes, 10) || now.getMonth() + 1 : now.getMonth() + 1));
   const anio = Math.max(2020, Math.min(2100, params?.anio ? parseInt(params.anio, 10) || now.getFullYear() : now.getFullYear()));
-  const { desde, hasta } = getMonthRange(mes, anio);
+  const vista = params?.vista === "semana" ? "semana" : "completo";
+  let desde: string;
+  let hasta: string;
+  let mesFinal: number;
+  let anioFinal: number;
+  if (vista === "semana") {
+    const wr = getWeekRange();
+    desde = wr.desde;
+    hasta = wr.hasta;
+    mesFinal = wr.mes;
+    anioFinal = wr.anio;
+  } else {
+    const mr = getMonthRange(mes, anio);
+    desde = mr.desde;
+    hasta = mr.hasta;
+    mesFinal = mes;
+    anioFinal = anio;
+  }
 
   const [visitasRes, clientesRes, vendedoresRes, zonasRes, transportistasRes] = await Promise.all([
     supabase
@@ -153,8 +186,9 @@ export default async function VisitasPage({
         vendedores={vendedores}
         zonas={zonas}
         rol={rol}
-        mes={mes}
-        anio={anio}
+        mes={mesFinal}
+        anio={anioFinal}
+        vista={vista}
       />
     </div>
   );

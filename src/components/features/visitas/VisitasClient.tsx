@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { imprimirComoPdf, contenidoPdfVisitaCompleto } from "@/lib/pdfUtils";
 import { ESTADOS_VISITA, ESTADO_LEGEND_BG_VISITA } from "@/data/estadosVisita";
 
@@ -95,6 +94,23 @@ function buildCalendarGrid(mes: number, anio: number): Date[][] {
   return semanas;
 }
 
+function buildWeekGrid(): Date[][] {
+  const hoy = new Date();
+  const dia = hoy.getDay();
+  const offsetLunes = dia === 0 ? -6 : 1 - dia;
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + offsetLunes);
+  const semana: Date[] = [];
+  for (let j = 0; j < 7; j++) {
+    const d = new Date(lunes);
+    d.setDate(lunes.getDate() + j);
+    semana.push(d);
+  }
+  return [semana];
+}
+
+const ANIOS = Array.from({ length: 15 }, (_, i) => new Date().getFullYear() - 5 + i);
+
 export function VisitasClient({
   visitas,
   clientes,
@@ -103,6 +119,7 @@ export function VisitasClient({
   rol,
   mes,
   anio,
+  vista,
 }: {
   visitas: Visita[];
   clientes: ClienteFull[];
@@ -111,6 +128,7 @@ export function VisitasClient({
   rol: string;
   mes: number;
   anio: number;
+  vista: "completo" | "semana";
 }) {
   const [modal, setModal] = useState<"nuevo" | "editar" | "detalle" | null>(null);
   const [visitaEdit, setVisitaEdit] = useState<Visita | null>(null);
@@ -130,7 +148,18 @@ export function VisitasClient({
   const clientesMap = useMemo(() => new Map(clientes.map((c) => [c.id, c])), [clientes]);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const canEdit = ["administrador", "auditor"].includes(rol);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hasVistaParam = searchParams.get("vista");
+    if (hasVistaParam) return;
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+    if (isMobile && vista === "completo") {
+      router.replace(`/visitas?mes=${mes}&anio=${anio}&vista=semana`);
+    }
+  }, [searchParams, vista, mes, anio, router]);
 
   const visitasPorFecha = useMemo(() => {
     const map = new Map<string, Visita[]>();
@@ -149,12 +178,10 @@ export function VisitasClient({
     return map;
   }, [visitas]);
 
-  const grid = useMemo(() => buildCalendarGrid(mes, anio), [mes, anio]);
-
-  const mesAnterior = mes === 1 ? 12 : mes - 1;
-  const anioAnterior = mes === 1 ? anio - 1 : anio;
-  const mesSiguiente = mes === 12 ? 1 : mes + 1;
-  const anioSiguiente = mes === 12 ? anio + 1 : anio;
+  const grid = useMemo(
+    () => (vista === "semana" ? buildWeekGrid() : buildCalendarGrid(mes, anio)),
+    [vista, mes, anio]
+  );
 
   function getIdVendedorParaCliente(clienteId: string, zonaId: string): string | null {
     const cli = clientesMap.get(clienteId);
@@ -220,7 +247,7 @@ export function VisitasClient({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al crear visita");
       setModal(null);
-      router.push(`/visitas?mes=${mes}&anio=${anio}`);
+      router.push(`/visitas?mes=${mes}&anio=${anio}&vista=${vista}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al crear visita");
@@ -256,7 +283,7 @@ export function VisitasClient({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al guardar");
       setModal(null);
-      router.push(`/visitas?mes=${mes}&anio=${anio}`);
+      router.push(`/visitas?mes=${mes}&anio=${anio}&vista=${vista}`);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al guardar");
@@ -269,44 +296,65 @@ export function VisitasClient({
     <div className="mt-6">
       <div className="flex-1 min-w-0">
         {/* Header calendario */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-4 mb-4">
+          <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-200">
               Calendario de programación
             </h2>
-            <span className="text-sm text-slate-400">(por defecto mes actual)</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-3">
             {canEdit && (
               <button
                 onClick={abrirNuevo}
-                className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium text-sm"
+                className="w-fit px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium text-sm"
               >
                 Programar visita
               </button>
             )}
-            <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1 border border-slate-600">
-              <Link
-                href={`/visitas?mes=${mesAnterior}&anio=${anioAnterior}`}
-                className="p-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded"
-                aria-label="Mes anterior"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </Link>
-              <span className="px-3 py-1 text-slate-200 font-medium min-w-[140px] text-center">
-                {MESES[mes - 1]} {anio}
-              </span>
-              <Link
-                href={`/visitas?mes=${mesSiguiente}&anio=${anioSiguiente}`}
-                className="p-2 text-slate-300 hover:text-white hover:bg-slate-700 rounded"
-                aria-label="Mes siguiente"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </Link>
+            <div className="flex flex-col md:flex-row md:flex-wrap items-stretch md:items-center gap-2">
+              <div className="flex items-center gap-2">
+                <select
+                  value={anio}
+                  onChange={(e) => {
+                    const nuevoAnio = parseInt(e.target.value, 10);
+                    router.push(`/visitas?mes=${mes}&anio=${nuevoAnio}&vista=${vista === "semana" ? "completo" : vista}`);
+                  }}
+                  className="w-full md:w-auto px-3 py-1.5 text-sm border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+                  disabled={vista === "semana"}
+                >
+                  {ANIOS.map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={mes}
+                  onChange={(e) => {
+                    const nuevoMes = parseInt(e.target.value, 10);
+                    router.push(`/visitas?mes=${nuevoMes}&anio=${anio}&vista=${vista === "semana" ? "completo" : vista}`);
+                  }}
+                  className="w-full md:w-auto px-3 py-1.5 text-sm border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+                  disabled={vista === "semana"}
+                >
+                  {MESES.map((m, i) => (
+                    <option key={m} value={i + 1}>{m}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={vista}
+                  onChange={(e) => {
+                    const nuevaVista = e.target.value as "completo" | "semana";
+                    router.push(`/visitas?mes=${mes}&anio=${anio}&vista=${nuevaVista}`);
+                  }}
+                  className="w-full md:w-auto px-3 py-1.5 text-sm border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
+                >
+                  <option value="completo">Calendario completo</option>
+                  <option value="semana">Semana actual</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
@@ -347,49 +395,62 @@ export function VisitasClient({
                       {visitasDia.map((v, idx) => (
                         <div
                           key={v.id}
-                          className={`rounded px-2 py-1 text-xs ${ESTADO_COLORS[v.estado] || "bg-slate-600 text-slate-200"}`}
+                          className={`rounded px-2 py-1 text-xs min-w-0 flex items-center justify-center md:block ${ESTADO_COLORS[v.estado] || "bg-slate-600 text-slate-200"}`}
                         >
-                          <div className="font-medium truncate">
-                            {idx + 1}º Visita · {v.clientes?.nombre || "—"}
-                          </div>
-                          <div className="flex items-center justify-between gap-1 mt-0.5">
-                            <span className="truncate opacity-90">
-                              {formatTime(v.hora_inicio)} – {formatTime(v.hora_fin)}
-                            </span>
-                            <div className="flex gap-0.5 shrink-0">
-                              {(() => {
-                                const cli = clientesMap.get(v.id_cliente);
-                                const tieneUbicacion = cli?.calle && cli?.numero != null && cli?.localidad && cli?.provincia;
-                                return tieneUbicacion ? (
-                                  <a
-                                    href={urlGoogleMaps(cli!.localidad!, cli!.provincia!, cli!.calle!, cli!.numero!)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      const url = urlGoogleMaps(cli!.localidad!, cli!.provincia!, cli!.calle!, cli!.numero!);
-                                      const w = window.open(url, "_blank", "noopener,noreferrer");
-                                      if (!w) window.location.href = url;
-                                    }}
-                                    className="p-0.5 rounded hover:bg-black/20"
-                                    title="Ubicación"
-                                  >
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                  </a>
-                                ) : null;
-                              })()}
-                              <button
-                                onClick={() => abrirDetalle(v)}
-                                className="p-0.5 rounded hover:bg-black/20"
-                                title="Ver detalles"
-                              >
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                              </button>
+                          {/* Solo ícono en móvil */}
+                          <button
+                            onClick={() => abrirDetalle(v)}
+                            className="p-1 rounded hover:bg-black/20 md:hidden"
+                            title="Ver detalles"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                          {/* Contenido completo en desktop */}
+                          <div className="hidden md:block">
+                            <div className="font-medium truncate">
+                              {idx + 1}º Visita · {v.clientes?.nombre || "—"}
+                            </div>
+                            <div className="flex items-center gap-1 mt-0.5 min-w-0">
+                              <div className="flex gap-0.5 shrink-0">
+                                {(() => {
+                                  const cli = clientesMap.get(v.id_cliente);
+                                  const tieneUbicacion = cli?.calle && cli?.numero != null && cli?.localidad && cli?.provincia;
+                                  return tieneUbicacion ? (
+                                    <a
+                                      href={urlGoogleMaps(cli!.localidad!, cli!.provincia!, cli!.calle!, cli!.numero!)}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        const url = urlGoogleMaps(cli!.localidad!, cli!.provincia!, cli!.calle!, cli!.numero!);
+                                        const w = window.open(url, "_blank", "noopener,noreferrer");
+                                        if (!w) window.location.href = url;
+                                      }}
+                                      className="p-0.5 rounded hover:bg-black/20"
+                                      title="Ubicación"
+                                    >
+                                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                      </svg>
+                                    </a>
+                                  ) : null;
+                                })()}
+                                <button
+                                  onClick={() => abrirDetalle(v)}
+                                  className="p-0.5 rounded hover:bg-black/20"
+                                  title="Ver detalles"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                </button>
+                              </div>
+                              <span className="truncate opacity-90 min-w-0 flex-1">
+                                {formatTime(v.hora_inicio)} – {formatTime(v.hora_fin)}
+                              </span>
                             </div>
                           </div>
                         </div>
