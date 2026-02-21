@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { id_cliente, id_vendedor, fecha_visita, hora_inicio, hora_fin, observaciones, estado } = body;
+  const { id_cliente, id_vendedor, id_auditor, fecha_visita, hora_inicio, hora_fin, observaciones, estado } = body;
 
   if (!id_cliente || !id_vendedor || !fecha_visita) {
     return NextResponse.json(
@@ -43,6 +43,7 @@ export async function POST(request: Request) {
       id_comercio: usuario.id_comercio,
       id_cliente,
       id_vendedor,
+      id_auditor: id_auditor || null,
       fecha_visita,
       hora_inicio: hora_inicio || null,
       hora_fin: hora_fin || null,

@@ -75,13 +75,14 @@ export default async function VisitasPage({
     anioFinal = anio;
   }
 
-  const [visitasRes, clientesRes, vendedoresRes, zonasRes, transportistasRes] = await Promise.all([
+  const [visitasRes, clientesRes, vendedoresRes, zonasRes, transportistasRes, usuariosRes] = await Promise.all([
     supabase
       .from("programacion_visitas")
       .select(`
         id,
         id_cliente,
         id_vendedor,
+        id_auditor,
         fecha_visita,
         hora_inicio,
         hora_fin,
@@ -127,6 +128,11 @@ export default async function VisitasPage({
       .from("transportistas")
       .select("id, nombre")
       .order("nombre"),
+    supabase
+      .from("usuarios")
+      .select("id, nombre, email")
+      .eq("activo", true)
+      .order("nombre"),
   ]);
 
   const rawVisitas = visitasRes.data ?? [];
@@ -143,6 +149,7 @@ export default async function VisitasPage({
   const vendedores = vendedoresRes.data ?? [];
   const zonas = zonasRes.data ?? [];
   const transportistas = transportistasRes.data ?? [];
+  const usuarios = usuariosRes.data ?? [];
   const vendedoresMap = new Map((vendedores ?? []).map((v) => [v.id, v.nombre]));
   const transportistasMap = new Map((transportistas ?? []).map((t) => [t.id, t.nombre]));
 
@@ -185,6 +192,7 @@ export default async function VisitasPage({
         clientes={clientes}
         vendedores={vendedores}
         zonas={zonas}
+        usuarios={usuarios}
         rol={rol}
         mes={mesFinal}
         anio={anioFinal}

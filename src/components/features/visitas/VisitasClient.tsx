@@ -28,10 +28,13 @@ type ClienteFull = {
   observaciones?: string | null;
 };
 
+type UsuarioItem = { id: string; nombre: string; email?: string };
+
 type Visita = {
   id: string;
   id_cliente: string;
   id_vendedor: string;
+  id_auditor?: string | null;
   fecha_visita: string;
   hora_inicio: string | null;
   hora_fin: string | null;
@@ -116,6 +119,7 @@ export function VisitasClient({
   clientes,
   vendedores,
   zonas,
+  usuarios,
   rol,
   mes,
   anio,
@@ -125,6 +129,7 @@ export function VisitasClient({
   clientes: ClienteFull[];
   vendedores: Vendedor[];
   zonas: Zona[];
+  usuarios: UsuarioItem[];
   rol: string;
   mes: number;
   anio: number;
@@ -138,6 +143,7 @@ export function VisitasClient({
 
   const [formZona, setFormZona] = useState("");
   const [formCliente, setFormCliente] = useState("");
+  const [formAuditor, setFormAuditor] = useState("");
   const [formFecha, setFormFecha] = useState("");
   const [formHoraInicio, setFormHoraInicio] = useState("");
   const [formHoraFin, setFormHoraFin] = useState("");
@@ -146,6 +152,7 @@ export function VisitasClient({
 
   const clientesPorZona = formZona ? clientes.filter((c) => c.id_zona === formZona) : [];
   const clientesMap = useMemo(() => new Map(clientes.map((c) => [c.id, c])), [clientes]);
+  const usuariosMap = useMemo(() => new Map(usuarios.map((u) => [u.id, u])), [usuarios]);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -193,6 +200,7 @@ export function VisitasClient({
   function abrirNuevo() {
     setFormZona("");
     setFormCliente("");
+    setFormAuditor("");
     setFormFecha(new Date().toISOString().slice(0, 10));
     setFormHoraInicio("");
     setFormHoraFin("");
@@ -207,6 +215,7 @@ export function VisitasClient({
     const cli = clientesMap.get(v.id_cliente);
     setFormZona(cli?.id_zona ?? "");
     setFormCliente(v.id_cliente);
+    setFormAuditor(v.id_auditor ?? "");
     setFormFecha(v.fecha_visita);
     setFormHoraInicio(toTimeInput(v.hora_inicio));
     setFormHoraFin(toTimeInput(v.hora_fin));
@@ -273,6 +282,7 @@ export function VisitasClient({
         body: JSON.stringify({
           id_cliente: formCliente,
           id_vendedor: idVendedor,
+          id_auditor: formAuditor || undefined,
           fecha_visita: formFecha,
           hora_inicio: formHoraInicio || undefined,
           hora_fin: formHoraFin || undefined,
@@ -501,6 +511,19 @@ export function VisitasClient({
                   <option value="">{formZona ? "Seleccionar cliente" : "Seleccionar zona primero"}</option>
                   {clientesPorZona.map((c) => (
                     <option key={c.id} value={c.id}>{c.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Auditor responsable</label>
+                <select
+                  value={formAuditor}
+                  onChange={(e) => setFormAuditor(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
+                >
+                  <option value="">Seleccionar auditor</option>
+                  {usuarios.map((u) => (
+                    <option key={u.id} value={u.id}>{u.nombre || u.email}</option>
                   ))}
                 </select>
               </div>
@@ -740,6 +763,9 @@ export function VisitasClient({
                   <button
                     onClick={() => {
                       const fechaStr = new Date().toLocaleString("es-AR");
+                      const auditorNombre = visitaDetalle.id_auditor
+                        ? (usuariosMap.get(visitaDetalle.id_auditor)?.nombre || usuariosMap.get(visitaDetalle.id_auditor)?.email)
+                        : null;
                       const contenido = contenidoPdfVisitaCompleto(
                         cli ?? { nombre: visitaDetalle.clientes?.nombre ?? "—" },
                         {
@@ -748,6 +774,7 @@ export function VisitasClient({
                           hora_fin: visitaDetalle.hora_fin,
                           estado: ESTADOS.find((e) => e.value === visitaDetalle.estado)?.label ?? visitaDetalle.estado,
                           observaciones: visitaDetalle.observaciones,
+                          auditor_nombre: auditorNombre,
                         }
                       );
                       imprimirComoPdf(`Visita - ${visitaDetalle.clientes?.nombre ?? "—"}`, contenido, fechaStr);
@@ -811,6 +838,7 @@ export function VisitasClient({
                     <section>
                       <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">Datos de la visita</h3>
                       <dl className="space-y-2 text-sm">
+                        <div><dt className="text-slate-500 inline">Auditor responsable:</dt> <dd className="text-slate-200 inline ml-1">{visitaDetalle.id_auditor ? (usuariosMap.get(visitaDetalle.id_auditor)?.nombre || usuariosMap.get(visitaDetalle.id_auditor)?.email || "—") : "—"}</dd></div>
                         <div><dt className="text-slate-500 inline">Fecha estimada:</dt> <dd className="text-slate-200 inline ml-1">{new Date(visitaDetalle.fecha_visita + "T12:00:00").toLocaleDateString("es-AR")}</dd></div>
                         <div><dt className="text-slate-500 inline">Hora inicio estimada:</dt> <dd className="text-slate-200 inline ml-1">{formatTime(visitaDetalle.hora_inicio)}</dd></div>
                         <div><dt className="text-slate-500 inline">Hora fin estimada:</dt> <dd className="text-slate-200 inline ml-1">{formatTime(visitaDetalle.hora_fin)}</dd></div>

@@ -199,6 +199,7 @@ export function contenidoPdfVisitaCompleto(
     hora_fin: string | null;
     estado: string;
     observaciones: string | null;
+    auditor_nombre?: string | null;
   }
 ) {
   const fechaStr = new Date(visita.fecha_visita + "T12:00:00").toLocaleDateString("es-AR", {
@@ -231,6 +232,7 @@ export function contenidoPdfVisitaCompleto(
     ${fila("Transportista frecuente", cliente.transportista_nombre || "—")}
     ${fila("Observaciones cliente", cliente.observaciones || "—")}
     <h2 style="font-size:12px;margin:10px 0 6px;color:#6b7280;">Datos de la visita</h2>
+    ${fila("Auditor responsable", visita.auditor_nombre || "—")}
     ${fila("Fecha estimada", fechaStr)}
     ${fila("Hora inicio estimada", horaInicio)}
     ${fila("Hora fin estimada", horaFin)}

@@ -26,11 +26,12 @@ export async function PATCH(
   }
 
   const body = await request.json();
-  const { id_cliente, id_vendedor, fecha_visita, hora_inicio, hora_fin, observaciones, estado } = body;
+  const { id_cliente, id_vendedor, id_auditor, fecha_visita, hora_inicio, hora_fin, observaciones, estado } = body;
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (id_cliente !== undefined) updates.id_cliente = id_cliente;
   if (id_vendedor !== undefined) updates.id_vendedor = id_vendedor;
+  if (id_auditor !== undefined) updates.id_auditor = id_auditor || null;
   if (fecha_visita !== undefined) updates.fecha_visita = fecha_visita;
   if (hora_inicio !== undefined) updates.hora_inicio = hora_inicio || null;
   if (hora_fin !== undefined) updates.hora_fin = hora_fin || null;
