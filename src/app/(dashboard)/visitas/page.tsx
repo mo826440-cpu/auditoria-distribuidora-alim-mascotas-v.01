@@ -31,7 +31,7 @@ function getWeekRange() {
 export default async function VisitasPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ mes?: string; anio?: string; vista?: string }>;
+  searchParams?: Promise<{ mes?: string; anio?: string; vista?: string; ver?: string }>;
 }) {
   const supabase = await createClient();
   const {
@@ -75,7 +75,7 @@ export default async function VisitasPage({
     anioFinal = anio;
   }
 
-  const [visitasRes, clientesRes, vendedoresRes, zonasRes, transportistasRes, usuariosRes] = await Promise.all([
+  const [visitasRes, visitaVerRes, clientesRes, vendedoresRes, zonasRes, transportistasRes, usuariosRes] = await Promise.all([
     supabase
       .from("programacion_visitas")
       .select(`
@@ -94,6 +94,25 @@ export default async function VisitasPage({
       .gte("fecha_visita", desde)
       .lte("fecha_visita", hasta)
       .order("fecha_visita", { ascending: true }),
+    params?.ver
+      ? supabase
+          .from("programacion_visitas")
+          .select(`
+            id,
+            id_cliente,
+            id_vendedor,
+            id_auditor,
+            fecha_visita,
+            hora_inicio,
+            hora_fin,
+            observaciones,
+            estado,
+            clientes(nombre),
+            vendedores(nombre)
+          `)
+          .eq("id", params.ver)
+          .single()
+      : Promise.resolve({ data: null }),
     supabase
       .from("clientes")
       .select(`
@@ -136,7 +155,14 @@ export default async function VisitasPage({
   ]);
 
   const rawVisitas = visitasRes.data ?? [];
-  const visitas = rawVisitas.map((v) => {
+  const visitaVer = visitaVerRes?.data;
+  const visitasRawMerged =
+    visitaVer && !rawVisitas.some((v) => v.id === visitaVer.id)
+      ? [visitaVer, ...rawVisitas].sort(
+          (a, b) => new Date(a.fecha_visita).getTime() - new Date(b.fecha_visita).getTime()
+        )
+      : rawVisitas;
+  const visitas = visitasRawMerged.map((v) => {
     const vAny = v as Record<string, unknown>;
     const clientesRaw = vAny.clientes;
     const vendedoresRaw = vAny.vendedores;
@@ -197,6 +223,7 @@ export default async function VisitasPage({
         mes={mesFinal}
         anio={anioFinal}
         vista={vista}
+        verVisitaId={params?.ver}
       />
     </div>
   );

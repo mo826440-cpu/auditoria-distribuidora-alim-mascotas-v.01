@@ -56,7 +56,7 @@ export function DashboardSidebar({
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <nav className="p-4 pt-16 lg:pt-4 space-y-1">
+        <nav className="p-4 pt-16 lg:pt-16 space-y-1 overflow-y-auto h-full">
           {filteredItems.map((item) => {
             if ("subItems" in item && item.subItems) {
               const isActive = pathname.startsWith(item.href);

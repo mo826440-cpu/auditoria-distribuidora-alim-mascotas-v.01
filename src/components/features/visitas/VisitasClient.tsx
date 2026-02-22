@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { imprimirComoPdf, contenidoPdfVisitaCompleto } from "@/lib/pdfUtils";
 import { ESTADOS_VISITA, ESTADO_LEGEND_BG_VISITA } from "@/data/estadosVisita";
@@ -124,6 +125,7 @@ export function VisitasClient({
   mes,
   anio,
   vista,
+  verVisitaId,
 }: {
   visitas: Visita[];
   clientes: ClienteFull[];
@@ -134,6 +136,7 @@ export function VisitasClient({
   mes: number;
   anio: number;
   vista: "completo" | "semana";
+  verVisitaId?: string;
 }) {
   const [modal, setModal] = useState<"nuevo" | "editar" | "detalle" | null>(null);
   const [visitaEdit, setVisitaEdit] = useState<Visita | null>(null);
@@ -167,6 +170,15 @@ export function VisitasClient({
       router.replace(`/visitas?mes=${mes}&anio=${anio}&vista=semana`);
     }
   }, [searchParams, vista, mes, anio, router]);
+
+  useEffect(() => {
+    if (!verVisitaId || !visitas.length) return;
+    const v = visitas.find((x) => x.id === verVisitaId);
+    if (v) {
+      setVisitaDetalle(v);
+      setModal("detalle");
+    }
+  }, [verVisitaId, visitas]);
 
   const visitasPorFecha = useMemo(() => {
     const map = new Map<string, Visita[]>();
@@ -230,6 +242,49 @@ export function VisitasClient({
     setModal("detalle");
   }
 
+  function limpiarFormulario() {
+    setFormZona("");
+    setFormCliente("");
+    setFormAuditor("");
+    setFormFecha(new Date().toISOString().slice(0, 10));
+    setFormHoraInicio("");
+    setFormHoraFin("");
+    setFormObservaciones("");
+    setFormEstado("pendiente");
+    setError(null);
+  }
+
+  const handleCancelarConConfirmar = useCallback(() => {
+    if (window.confirm("¿Está seguro que desea cancelar? Se perderán los cambios no guardados.")) {
+      limpiarFormulario();
+      setModal(null);
+      setVisitaEdit(null);
+    }
+  }, []);
+
+  const handleClickFuera = useCallback(() => {
+    setModal(null);
+  }, []);
+
+  useEffect(() => {
+    if (!modal) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (modal === "detalle") {
+          setModal(null);
+        } else if (modal === "nuevo" || modal === "editar") {
+          if (window.confirm("¿Está seguro que desea cancelar? Se perderán los cambios no guardados.")) {
+            limpiarFormulario();
+            setModal(null);
+            setVisitaEdit(null);
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [modal]);
+
   async function handleCrear(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -246,6 +301,7 @@ export function VisitasClient({
         body: JSON.stringify({
           id_cliente: formCliente,
           id_vendedor: idVendedor,
+          id_auditor: formAuditor || undefined,
           fecha_visita: formFecha,
           hora_inicio: formHoraInicio || undefined,
           hora_fin: formHoraFin || undefined,
@@ -590,7 +646,7 @@ export function VisitasClient({
               <div className="flex gap-2 justify-end pt-2">
                 <button
                   type="button"
-                  onClick={() => setModal(null)}
+                  onClick={handleCancelarConConfirmar}
                   className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
                 >
                   Cancelar
@@ -646,6 +702,19 @@ export function VisitasClient({
                   <option value="">{formZona ? "Seleccionar cliente" : "Seleccionar zona primero"}</option>
                   {clientesPorZona.map((c) => (
                     <option key={c.id} value={c.id}>{c.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-1">Auditor responsable</label>
+                <select
+                  value={formAuditor}
+                  onChange={(e) => setFormAuditor(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 focus:ring-2 focus:ring-primary-500 outline-none"
+                >
+                  <option value="">Seleccionar auditor</option>
+                  {usuarios.map((u) => (
+                    <option key={u.id} value={u.id}>{u.nombre || u.email}</option>
                   ))}
                 </select>
               </div>
@@ -711,7 +780,7 @@ export function VisitasClient({
               <div className="flex gap-2 justify-end pt-2">
                 <button
                   type="button"
-                  onClick={() => setModal(null)}
+                  onClick={handleCancelarConConfirmar}
                   className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
                 >
                   Cancelar
@@ -734,8 +803,8 @@ export function VisitasClient({
         const cli = clientesMap.get(visitaDetalle.id_cliente);
         const tieneUbicacion = cli?.calle && cli?.numero != null && cli?.localidad && cli?.provincia;
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <div className="bg-slate-850 rounded-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col border border-slate-700 shadow-xl">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setModal(null)}>
+            <div className="bg-slate-850 rounded-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col border border-slate-700 shadow-xl" onClick={(e) => e.stopPropagation()}>
               <div className="flex-shrink-0 px-6 py-4 border-b border-slate-700 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-200">Detalle de visita</h2>
                 <div className="flex items-center gap-2">
@@ -759,6 +828,18 @@ export function VisitasClient({
                       </svg>
                       Ubicación
                     </a>
+                  )}
+                  {canEdit && (
+                    <Link
+                      href={`/auditorias?nueva=1&id_cliente=${visitaDetalle.id_cliente}&id_vendedor=${visitaDetalle.id_vendedor}&id_visita=${visitaDetalle.id}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg text-sm"
+                      title="Nueva auditoría"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      </svg>
+                      Nueva auditoría
+                    </Link>
                   )}
                   <button
                     onClick={() => {

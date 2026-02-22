@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-type Cliente = { id: string; nombre: string };
+type Cliente = { id: string; nombre: string; id_transportista_frecuente?: string | null };
 type Vendedor = { id: string; nombre: string };
-type Visita = { id: string; fecha_visita: string };
+type Visita = { id: string; fecha_visita: string; id_cliente?: string; id_vendedor?: string };
 type Transportista = { id: string; nombre: string };
 
 type Auditoria = {
@@ -96,6 +97,7 @@ export function AuditoriasClient({
   visitas,
   transportistas,
   rol,
+  abrirNuevaDesdeVisita,
 }: {
   auditorias: Auditoria[];
   clientes: Cliente[];
@@ -103,6 +105,7 @@ export function AuditoriasClient({
   visitas: Visita[];
   transportistas: Transportista[];
   rol: string;
+  abrirNuevaDesdeVisita?: { id_cliente: string; id_vendedor: string; id_visita: string };
 }) {
   const router = useRouter();
   const canEdit = ["administrador", "auditor"].includes(rol);
@@ -151,6 +154,59 @@ export function AuditoriasClient({
   const [formCumplimientoObs, setFormCumplimientoObs] = useState("");
   const [formLogisticaObs, setFormLogisticaObs] = useState("");
 
+  useEffect(() => {
+    if (formVisita) {
+      const v = visitas.find((x) => x.id === formVisita);
+      if (v?.fecha_visita) setFormFecha(v.fecha_visita);
+    }
+  }, [formVisita, visitas]);
+
+  useEffect(() => {
+    if (abrirNuevaDesdeVisita && canEdit) {
+      setFormCliente(abrirNuevaDesdeVisita.id_cliente);
+      setFormVendedor(abrirNuevaDesdeVisita.id_vendedor);
+      setFormVisita(abrirNuevaDesdeVisita.id_visita);
+      const cli = clientes.find((c) => c.id === abrirNuevaDesdeVisita.id_cliente);
+      setFormTransportista(cli?.id_transportista_frecuente ?? "");
+      setFormFecha(new Date().toISOString().slice(0, 10));
+      setFormLocalLimpio(null);
+      setFormProductosExhibidos("");
+      setFormStockSuficiente(null);
+      setFormRotacion("");
+      setFormPlazosPago(null);
+      setFormMetodosPago([]);
+      setFormPuntuacionCliente("");
+      setFormPuntuacionVendedor("");
+      setFormPuntuacionRepartidor("");
+      setFormClasificacion("");
+      setFormObservaciones("");
+      setFormFrecuenciaEnvios("");
+      setFormPromedioKg("");
+      setFormMontoCompra("");
+      setFormCondicionesLocal("");
+      setFormCondicionesIluminacion("");
+      setFormCondicionesSector("");
+      setFormCondicionesHigiene("");
+      setFormExhibicionVisible("");
+      setFormExhibicionUbicacion("");
+      setFormExhibicionCarteleria("");
+      setFormExhibicionComparacion("");
+      setFormExhibicionObs("");
+      setFormStockObs("");
+      setFormPreciosObs("");
+      setFormRelacionObs("");
+      setFormGestionObs("");
+      setFormConocimientoObs("");
+      setFormRelacionClienteObs("");
+      setFormCumplimientoObs("");
+      setFormLogisticaObs("");
+      setError(null);
+      setAuditoriaEdit(null);
+      setModal("nuevo");
+      router.replace("/auditorias");
+    }
+  }, [abrirNuevaDesdeVisita, canEdit, router, clientes]);
+
   function abrirNuevo() {
     setFormCliente("");
     setFormVendedor("");
@@ -192,6 +248,73 @@ export function AuditoriasClient({
     setAuditoriaEdit(null);
     setModal("nuevo");
   }
+
+  function limpiarFormulario() {
+    setFormCliente("");
+    setFormVendedor("");
+    setFormVisita("");
+    setFormTransportista("");
+    setFormFecha(new Date().toISOString().slice(0, 10));
+    setFormLocalLimpio(null);
+    setFormProductosExhibidos("");
+    setFormStockSuficiente(null);
+    setFormRotacion("");
+    setFormPlazosPago(null);
+    setFormMetodosPago([]);
+    setFormPuntuacionCliente("");
+    setFormPuntuacionVendedor("");
+    setFormPuntuacionRepartidor("");
+    setFormClasificacion("");
+    setFormObservaciones("");
+    setFormFrecuenciaEnvios("");
+    setFormPromedioKg("");
+    setFormMontoCompra("");
+    setFormCondicionesLocal("");
+    setFormCondicionesIluminacion("");
+    setFormCondicionesSector("");
+    setFormCondicionesHigiene("");
+    setFormExhibicionVisible("");
+    setFormExhibicionUbicacion("");
+    setFormExhibicionCarteleria("");
+    setFormExhibicionComparacion("");
+    setFormExhibicionObs("");
+    setFormStockObs("");
+    setFormPreciosObs("");
+    setFormRelacionObs("");
+    setFormGestionObs("");
+    setFormConocimientoObs("");
+    setFormRelacionClienteObs("");
+    setFormCumplimientoObs("");
+    setFormLogisticaObs("");
+    setError(null);
+  }
+
+  const handleCancelarConConfirmar = useCallback(() => {
+    if (window.confirm("¿Está seguro que desea cancelar? Se perderán los cambios no guardados.")) {
+      limpiarFormulario();
+      setModal(null);
+      setAuditoriaEdit(null);
+    }
+  }, []);
+
+  const handleClickFuera = useCallback(() => {
+    setModal(null);
+  }, []);
+
+  useEffect(() => {
+    if (!modal || (modal !== "nuevo" && modal !== "editar")) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (window.confirm("¿Está seguro que desea cancelar? Se perderán los cambios no guardados.")) {
+          limpiarFormulario();
+          setModal(null);
+          setAuditoriaEdit(null);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [modal]);
 
   function abrirEditar(a: Auditoria) {
     setAuditoriaEdit(a);
@@ -300,6 +423,9 @@ export function AuditoriasClient({
       setError("Debés tener al menos un cliente y un vendedor para crear una auditoría.");
       return;
     }
+    if (!window.confirm("¿Está de acuerdo en cerrar la auditoría? Se registrarán todos los datos y la visita pasará a estado Realizada.")) {
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/auditorias", {
@@ -315,6 +441,17 @@ export function AuditoriasClient({
       }
       if (!res.ok) {
         throw new Error(data.error || `Error ${res.status} al crear auditoría`);
+      }
+      if (formVisita) {
+        const patchRes = await fetch(`/api/visitas/${formVisita}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ estado: "realizada" }),
+        });
+        if (!patchRes.ok) {
+          const patchData = await patchRes.json().catch(() => ({}));
+          console.warn("No se pudo actualizar visita a realizada:", patchData.error);
+        }
       }
       setModal(null);
       router.refresh();
@@ -458,10 +595,16 @@ export function AuditoriasClient({
 
       {/* Modal Nuevo / Editar */}
       {(modal === "nuevo" || modal === "editar") && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 overflow-y-auto py-6 px-4">
-          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-2xl shadow-xl my-2 max-h-[calc(100vh-3rem)] overflow-y-auto border border-slate-700">
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 overflow-y-auto py-6 px-4"
+          onClick={handleClickFuera}
+        >
+          <div
+            className="bg-slate-850 rounded-xl p-6 w-full max-w-2xl shadow-xl my-2 max-h-[calc(100vh-3rem)] overflow-y-auto border border-slate-700"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h2 className="text-lg font-semibold text-slate-200">
-              {modal === "nuevo" ? "Nueva auditoría" : "Editar auditoría"}
+              {modal === "nuevo" ? "Auditoría" : "Editar auditoría"}
             </h2>
             {!clientes.length && (
               <div className="mt-2 p-3 rounded bg-amber-900/50 text-amber-300 text-sm">
@@ -482,40 +625,9 @@ export function AuditoriasClient({
               onSubmit={modal === "nuevo" ? handleCrear : handleEditar}
               className="mt-4 space-y-6"
             >
-              {/* Datos generales */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide">
-                  Datos generales
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Cliente *</label>
-                    <select
-                      value={formCliente}
-                      onChange={(e) => setFormCliente(e.target.value)}
-                      required
-                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-                    >
-                      <option value="">Seleccionar</option>
-                      {clientes.map((c) => (
-                        <option key={c.id} value={c.id}>{c.nombre}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Vendedor *</label>
-                    <select
-                      value={formVendedor}
-                      onChange={(e) => setFormVendedor(e.target.value)}
-                      required
-                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-                    >
-                      <option value="">Seleccionar</option>
-                      {vendedores.map((v) => (
-                        <option key={v.id} value={v.id}>{v.nombre}</option>
-                      ))}
-                    </select>
-                  </div>
+              {/* Fecha y Visita (ocultos cuando hay visita; fecha visible cuando no) */}
+              {!formVisita && (
+                <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Fecha *</label>
                     <input
@@ -530,7 +642,18 @@ export function AuditoriasClient({
                     <label className="block text-sm font-medium text-slate-700 mb-1">Visita programada</label>
                     <select
                       value={formVisita}
-                      onChange={(e) => setFormVisita(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormVisita(val);
+                        const v = visitas.find((x) => x.id === val);
+                        if (v?.fecha_visita) setFormFecha(v.fecha_visita);
+                        if (v?.id_cliente) {
+                          setFormCliente(v.id_cliente);
+                          const cli = clientes.find((c) => c.id === v.id_cliente);
+                          setFormTransportista(cli?.id_transportista_frecuente ?? "");
+                        }
+                        if (v?.id_vendedor) setFormVendedor(v.id_vendedor);
+                      }}
                       className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">Ninguna</option>
@@ -541,12 +664,100 @@ export function AuditoriasClient({
                       ))}
                     </select>
                   </div>
+                </div>
+              )}
+              {/* Datos generales */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wide">
+                  Datos generales
+                </h3>
+                <div className="flex flex-wrap items-center gap-4">
+                  <div>
+                    <span className="text-xs text-slate-500 block mb-0.5">Cliente</span>
+                    <span className="text-slate-200 font-medium">
+                      {clientes.find((c) => c.id === formCliente)?.nombre ?? "—"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 block mb-0.5">Vendedor</span>
+                    <span className="text-slate-200 font-medium">
+                      {vendedores.find((v) => v.id === formVendedor)?.nombre ?? "—"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-500 block mb-0.5">Transportista</span>
+                    <span className="text-slate-200 font-medium">
+                      {formTransportista
+                        ? transportistas.find((t) => t.id === formTransportista)?.nombre ?? "—"
+                        : "Ninguno"}
+                    </span>
+                  </div>
+                  {formVisita && (
+                    <Link
+                      href={`/visitas?ver=${formVisita}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg text-sm"
+                      title="Ver detalle de visita"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Ver detalle visita
+                    </Link>
+                  )}
+                </div>
+                {!formCliente && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Cliente *</label>
+                      <select
+                        value={formCliente}
+                        onChange={(e) => setFormCliente(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                      >
+                        <option value="">Seleccionar</option>
+                        {clientes.map((c) => (
+                          <option key={c.id} value={c.id}>{c.nombre}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Vendedor *</label>
+                      <select
+                        value={formVendedor}
+                        onChange={(e) => setFormVendedor(e.target.value)}
+                        required
+                        className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                      >
+                        <option value="">Seleccionar</option>
+                        {vendedores.map((v) => (
+                          <option key={v.id} value={v.id}>{v.nombre}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Transportista</label>
+                      <select
+                        value={formTransportista}
+                        onChange={(e) => setFormTransportista(e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                      >
+                        <option value="">Ninguno</option>
+                        {transportistas.map((t) => (
+                          <option key={t.id} value={t.id}>{t.nombre}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+                {formCliente && (
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Transportista</label>
                     <select
                       value={formTransportista}
                       onChange={(e) => setFormTransportista(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                      className="w-full max-w-xs px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                     >
                       <option value="">Ninguno</option>
                       {transportistas.map((t) => (
@@ -554,7 +765,7 @@ export function AuditoriasClient({
                       ))}
                     </select>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Cliente */}
@@ -897,7 +1108,7 @@ export function AuditoriasClient({
               <div className="flex gap-2 justify-end pt-2">
                 <button
                   type="button"
-                  onClick={() => setModal(null)}
+                  onClick={handleCancelarConConfirmar}
                   className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
                 >
                   Cancelar
@@ -907,7 +1118,7 @@ export function AuditoriasClient({
                   disabled={loading || !clientes.length || !vendedores.length}
                   className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg disabled:opacity-50"
                 >
-                  {loading ? "Guardando..." : modal === "nuevo" ? "Crear auditoría" : "Guardar"}
+                  {loading ? "Guardando..." : modal === "nuevo" ? "Cierre Auditoría" : "Guardar"}
                 </button>
               </div>
             </form>

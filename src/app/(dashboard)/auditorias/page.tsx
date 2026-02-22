@@ -2,7 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { AuditoriasClient } from "@/components/features/auditorias/AuditoriasClient";
 
-export default async function AuditoriasPage() {
+export default async function AuditoriasPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ nueva?: string; id_cliente?: string; id_vendedor?: string; id_visita?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -65,11 +69,11 @@ export default async function AuditoriasPage() {
         vendedores(nombre)
       `)
       .order("fecha", { ascending: false }),
-    supabase.from("clientes").select("id, nombre").order("nombre"),
+    supabase.from("clientes").select("id, nombre, id_transportista_frecuente").order("nombre"),
     supabase.from("vendedores").select("id, nombre").order("nombre"),
     supabase
       .from("programacion_visitas")
-      .select("id, fecha_visita")
+      .select("id, fecha_visita, id_cliente, id_vendedor")
       .order("fecha_visita", { ascending: false })
       .limit(100),
     supabase.from("transportistas").select("id, nombre").order("nombre"),
@@ -95,6 +99,9 @@ export default async function AuditoriasPage() {
   const transportistas = transportistasRes.data ?? [];
   const rol = usuario.rol;
 
+  const params = await searchParams;
+  const nuevaDesdeVisita = params?.nueva === "1" && params?.id_cliente && params?.id_vendedor && params?.id_visita;
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-[var(--foreground)]">Auditorías</h1>
@@ -106,6 +113,15 @@ export default async function AuditoriasPage() {
         visitas={visitas}
         transportistas={transportistas}
         rol={rol}
+        abrirNuevaDesdeVisita={
+          nuevaDesdeVisita
+            ? {
+                id_cliente: params!.id_cliente!,
+                id_vendedor: params!.id_vendedor!,
+                id_visita: params!.id_visita!,
+              }
+            : undefined
+        }
       />
     </div>
   );
