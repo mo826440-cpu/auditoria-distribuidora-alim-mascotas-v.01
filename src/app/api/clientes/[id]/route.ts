@@ -52,6 +52,7 @@ export async function PATCH(
     nombre,
     cuit,
     id_zona,
+    id_tipo_comercio,
     localidad,
     provincia,
     calle,
@@ -126,6 +127,7 @@ export async function PATCH(
     updates.cuit = v;
   }
   if (id_zona !== undefined) updates.id_zona = id_zona || null;
+  if (id_tipo_comercio !== undefined) updates.id_tipo_comercio = id_tipo_comercio || null;
   if (localidad !== undefined) updates.localidad = localidad ? String(localidad).trim() : null;
   if (provincia !== undefined) updates.provincia = provincia ? String(provincia).trim() : "Córdoba";
   if (id_vendedor_frecuente !== undefined) updates.id_vendedor_frecuente = id_vendedor_frecuente || null;

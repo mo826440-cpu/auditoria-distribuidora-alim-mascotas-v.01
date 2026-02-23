@@ -54,6 +54,10 @@ export default async function AuditoriasPage({
         puntuacion_cliente,
         puntuacion_vendedor,
         puntuacion_repartidor,
+        puntuacion_cliente_360,
+        puntuacion_vendedor_360,
+        puntuacion_general_360,
+        resultado_360,
         clasificacion_cliente,
         condiciones_generales,
         exhibicion_productos,
@@ -69,7 +73,10 @@ export default async function AuditoriasPage({
         vendedores(nombre)
       `)
       .order("fecha", { ascending: false }),
-    supabase.from("clientes").select("id, nombre, id_transportista_frecuente").order("nombre"),
+    supabase
+      .from("clientes")
+      .select("id, nombre, id_transportista_frecuente, id_tipo_comercio, referencias_tipos_comercio(nombre)")
+      .order("nombre"),
     supabase.from("vendedores").select("id, nombre").order("nombre"),
     supabase
       .from("programacion_visitas")
@@ -93,14 +100,16 @@ export default async function AuditoriasPage({
     return { ...a, clientes, vendedores };
   });
 
-  const clientes = clientesRes.data ?? [];
+  const clientesRaw = clientesRes.data ?? [];
+  const clientes = clientesRaw.map((c) => {
+    const tc = (c as Record<string, unknown>).referencias_tipos_comercio;
+    const tipoComercioNombre = Array.isArray(tc) ? (tc[0] as { nombre?: string } | null)?.nombre : (tc as { nombre?: string } | null)?.nombre;
+    return { ...c, tipo_comercio_nombre: tipoComercioNombre ?? null };
+  });
   const vendedores = vendedoresRes.data ?? [];
   const visitas = visitasRes.data ?? [];
   const transportistas = transportistasRes.data ?? [];
   const rol = usuario.rol;
-
-  const params = await searchParams;
-  const nuevaDesdeVisita = params?.nueva === "1" && params?.id_cliente && params?.id_vendedor && params?.id_visita;
 
   return (
     <div>
@@ -113,15 +122,6 @@ export default async function AuditoriasPage({
         visitas={visitas}
         transportistas={transportistas}
         rol={rol}
-        abrirNuevaDesdeVisita={
-          nuevaDesdeVisita
-            ? {
-                id_cliente: params!.id_cliente!,
-                id_vendedor: params!.id_vendedor!,
-                id_visita: params!.id_visita!,
-              }
-            : undefined
-        }
       />
     </div>
   );

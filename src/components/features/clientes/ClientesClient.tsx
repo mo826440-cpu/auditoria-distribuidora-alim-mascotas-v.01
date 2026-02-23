@@ -22,6 +22,12 @@ type Transportista = {
   nombre: string;
 };
 
+type TipoComercio = {
+  id: string;
+  nombre: string;
+  orden?: number;
+};
+
 type Cliente = {
   id: string;
   nombre: string;
@@ -31,6 +37,8 @@ type Cliente = {
   codigo_interno?: string | null;
   cuit?: string | null;
   id_zona?: string | null;
+  id_tipo_comercio?: string | null;
+  tipo_comercio_nombre?: string | null;
   id_vendedor_frecuente?: string | null;
   id_transportista_frecuente?: string | null;
   zona_nombre?: string | null;
@@ -75,6 +83,7 @@ function urlGoogleMaps(localidad: string, provincia: string, calle: string, nume
 export function ClientesClient({
   clientes,
   zonas,
+  tiposComercio = [],
   vendedores,
   transportistas,
   rol,
@@ -82,6 +91,7 @@ export function ClientesClient({
 }: {
   clientes: Cliente[];
   zonas: Zona[];
+  tiposComercio: TipoComercio[];
   vendedores: Vendedor[];
   transportistas: Transportista[];
   rol: string;
@@ -90,9 +100,13 @@ export function ClientesClient({
   const router = useRouter();
   const canEdit = ["administrador", "auditor"].includes(rol);
 
-  const [modal, setModal] = useState<"nuevo" | "editar" | null>(null);
+  const [modal, setModal] = useState<"nuevo" | "editar" | "detalle" | null>(null);
   const [clienteEdit, setClienteEdit] = useState<Cliente | null>(null);
+  const [clienteDetalle, setClienteDetalle] = useState<Cliente | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [modalTiposComercio, setModalTiposComercio] = useState(false);
+  const [nuevoTipoNombre, setNuevoTipoNombre] = useState("");
+  const [loadingTipos, setLoadingTipos] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -103,6 +117,7 @@ export function ClientesClient({
   const [formNombre, setFormNombre] = useState("");
   const [formCuit, setFormCuit] = useState("");
   const [formZona, setFormZona] = useState("");
+  const [formTipoComercio, setFormTipoComercio] = useState("");
   const [formLocalidad, setFormLocalidad] = useState("");
   const [formProvincia, setFormProvincia] = useState("Córdoba");
   const [formCalle, setFormCalle] = useState("");
@@ -135,6 +150,7 @@ export function ClientesClient({
     setFormNombre("");
     setFormCuit("");
     setFormZona("");
+    setFormTipoComercio("");
     setFormLocalidad("");
     setFormProvincia("Córdoba");
     setFormCalle("");
@@ -183,6 +199,7 @@ export function ClientesClient({
     if (!formEmail.trim()) return "Email obligatorio";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail)) return "Email inválido";
     if (!formZona) return "Zona obligatoria";
+    if (!formTipoComercio) return "Tipo de comercio obligatorio";
     if (!formLocalidad.trim()) return "Localidad/Ciudad obligatoria";
     if (!formProvincia.trim()) return "Provincia obligatoria";
     if (!formCalle.trim()) return "Calle obligatoria";
@@ -260,6 +277,7 @@ export function ClientesClient({
           nombre: formNombre.trim(),
           cuit: formCuit.replace(/\s/g, ""),
           id_zona: formZona || undefined,
+          id_tipo_comercio: formTipoComercio || undefined,
           localidad: formLocalidad || undefined,
           provincia: formProvincia,
           calle: formCalle.trim(),
@@ -281,6 +299,43 @@ export function ClientesClient({
     }
   }
 
+  async function handleAgregarTipoComercio() {
+    const nombre = nuevoTipoNombre.trim();
+    if (!nombre) return;
+    setLoadingTipos(true);
+    try {
+      const res = await fetch("/api/referencias/tipos-comercio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al agregar");
+      setNuevoTipoNombre("");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al agregar tipo");
+    } finally {
+      setLoadingTipos(false);
+    }
+  }
+
+  async function handleEliminarTipoComercio(id: string) {
+    if (!confirm("¿Eliminar este tipo de comercio?")) return;
+    setLoadingTipos(true);
+    try {
+      const res = await fetch(`/api/referencias/tipos-comercio/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al eliminar");
+      if (formTipoComercio === id) setFormTipoComercio("");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al eliminar tipo");
+    } finally {
+      setLoadingTipos(false);
+    }
+  }
+
   async function handleEliminar(id: string) {
     if (!confirm("¿Eliminar este cliente? Esta acción no se puede deshacer.")) return;
     setLoading(true);
@@ -297,7 +352,12 @@ export function ClientesClient({
     }
   }
 
-  function handleVerDetalle(c: Cliente) {
+  function abrirDetalle(c: Cliente) {
+    setClienteDetalle(c);
+    setModal("detalle");
+  }
+
+  function imprimirPdfCliente(c: Cliente) {
     const fecha = c.updated_at || c.created_at;
     const fechaStr = fecha ? new Date(fecha).toLocaleString("es-AR") : "—";
     const contenido = contenidoPdfCliente(
@@ -307,6 +367,7 @@ export function ClientesClient({
       c.email ?? "—",
       c.codigo_interno ?? "—",
       c.nombre ?? "—",
+      c.tipo_comercio_nombre ?? "—",
       c.cuit ?? "—",
       c.zona_nombre ?? "—",
       c.localidad ?? "—",
@@ -355,6 +416,41 @@ export function ClientesClient({
           placeholder="Letras, espacios, puntos, guiones, números, acentos"
           className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
         />
+      </div>
+      <div>
+        <div className="flex items-center gap-2">
+          <label className="block text-sm font-medium text-slate-300 mb-1 flex-1">Tipo de comercio *</label>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => {
+                setNuevoTipoNombre("");
+                setError(null);
+                setModalTiposComercio(true);
+              }}
+              className="p-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg"
+              title="Agregar o eliminar opciones"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          )}
+        </div>
+        <select
+          value={formTipoComercio}
+          onChange={(e) => setFormTipoComercio(e.target.value)}
+          required
+          className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+        >
+          <option value="">— Seleccionar —</option>
+          {tiposComercio.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.nombre}
+            </option>
+          ))}
+        </select>
       </div>
       <div>
         <label className="block text-sm font-medium text-slate-300 mb-1">CUIT *</label>
@@ -647,37 +743,15 @@ export function ClientesClient({
                     </td>
                     <td className="py-3 px-4 text-right">
                       <button
-                        onClick={() => handleVerDetalle(c)}
+                        onClick={() => abrirDetalle(c)}
                         className="p-1.5 text-slate-400 hover:text-primary-400 hover:bg-primary-900/40 rounded"
-                        title="Ver detalle (PDF)"
+                        title="Ver detalles"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </button>
-                      {canEdit && (
-                        <>
-                          <button
-                            onClick={() => abrirEditar(c)}
-                            className="p-1.5 text-slate-400 hover:text-primary-400 hover:bg-primary-900/40 rounded"
-                            title="Editar"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirm(c.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/40 rounded"
-                            title="Eliminar"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        </>
-                      )}
                     </td>
                   </tr>
                 ))
@@ -722,6 +796,182 @@ export function ClientesClient({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Detalle de cliente */}
+      {modal === "detalle" && clienteDetalle && (() => {
+        const c = clienteDetalle;
+        const tieneUbicacion = c.calle && c.numero != null && c.localidad && c.provincia;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setModal(null)}>
+            <div className="bg-slate-850 rounded-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col border border-slate-700 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex-shrink-0 px-6 py-4 border-b border-slate-700">
+                <h2 className="text-lg font-semibold text-slate-200">Detalle de cliente</h2>
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  {tieneUbicacion && (
+                    <a
+                      href={urlGoogleMaps(c.localidad!, c.provincia!, c.calle!, c.numero!)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const url = urlGoogleMaps(c.localidad!, c.provincia!, c.calle!, c.numero!);
+                        const w = window.open(url, "_blank", "noopener,noreferrer");
+                        if (!w) window.location.href = url;
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg text-sm"
+                      title="Ver ubicación"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Ubicación
+                    </a>
+                  )}
+                  {canEdit && (
+                    <button
+                      onClick={() => {
+                        setModal(null);
+                        abrirEditar(c);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg text-sm"
+                      title="Editar"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                      Editar
+                    </button>
+                  )}
+                  {canEdit && (
+                    <button
+                      onClick={() => {
+                        setModal(null);
+                        setDeleteConfirm(c.id);
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-primary-400 hover:text-red-400 hover:bg-red-900/40 rounded-lg text-sm"
+                      title="Eliminar"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Eliminar
+                    </button>
+                  )}
+                  <button
+                    onClick={() => imprimirPdfCliente(c)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg text-sm"
+                    title="Ver detalle (PDF)"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    PDF
+                  </button>
+                  <button
+                    onClick={() => setModal(null)}
+                    className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg"
+                    aria-label="Cerrar"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+                <section>
+                  <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">Datos del cliente</h3>
+                  <dl className="space-y-2 text-sm">
+                    <div><dt className="text-slate-500 inline">Nombre comercio:</dt> <dd className="text-slate-200 inline ml-1">{c.nombre ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Nombre representante:</dt> <dd className="text-slate-200 inline ml-1">{c.nombre_representante ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Contacto:</dt> <dd className="text-slate-200 inline ml-1">{c.contacto ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Email:</dt> <dd className="text-slate-200 inline ml-1">{c.email ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Código interno:</dt> <dd className="text-slate-200 inline ml-1">{c.codigo_interno ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">CUIT:</dt> <dd className="text-slate-200 inline ml-1">{c.cuit ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Tipo de comercio:</dt> <dd className="text-slate-200 inline ml-1">{c.tipo_comercio_nombre ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Zona:</dt> <dd className="text-slate-200 inline ml-1">{c.zona_nombre ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Localidad/Ciudad:</dt> <dd className="text-slate-200 inline ml-1">{c.localidad ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Provincia:</dt> <dd className="text-slate-200 inline ml-1">{c.provincia ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Calle:</dt> <dd className="text-slate-200 inline ml-1">{c.calle ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Número:</dt> <dd className="text-slate-200 inline ml-1">{c.numero ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Vendedor frecuente:</dt> <dd className="text-slate-200 inline ml-1">{c.vendedor_nombre ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Transportista frecuente:</dt> <dd className="text-slate-200 inline ml-1">{c.transportista_nombre ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Observaciones:</dt> <dd className="text-slate-200 inline ml-1">{c.observaciones ?? "—"}</dd></div>
+                    <div><dt className="text-slate-500 inline">Estado:</dt> <dd className="text-slate-200 inline ml-1">{c.activo ? "Activo" : "Inactivo"}</dd></div>
+                  </dl>
+                </section>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {modalTiposComercio && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200 mb-4">Gestionar tipos de comercio</h2>
+            {error && (
+              <div className="mb-3 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
+            )}
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={nuevoTipoNombre}
+                onChange={(e) => setNuevoTipoNombre(e.target.value)}
+                placeholder="Nuevo tipo (ej: Minorista)"
+                maxLength={100}
+                className="flex-1 px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAgregarTipoComercio())}
+              />
+              <button
+                type="button"
+                onClick={handleAgregarTipoComercio}
+                disabled={loadingTipos || !nuevoTipoNombre.trim()}
+                className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg disabled:opacity-50"
+              >
+                Agregar
+              </button>
+            </div>
+            <ul className="space-y-2 max-h-48 overflow-y-auto mb-4">
+              {tiposComercio.map((t) => (
+                <li
+                  key={t.id}
+                  className="flex items-center justify-between py-2 px-3 bg-slate-800 rounded-lg"
+                >
+                  <span className="text-slate-200">{t.nombre}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleEliminarTipoComercio(t.id)}
+                    disabled={loadingTipos}
+                    className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/40 rounded"
+                    title="Eliminar"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {tiposComercio.length === 0 && (
+              <p className="text-slate-400 text-sm mb-4">No hay tipos. Agregá uno arriba.</p>
+            )}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setModalTiposComercio(false);
+                  setError(null);
+                }}
+                className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

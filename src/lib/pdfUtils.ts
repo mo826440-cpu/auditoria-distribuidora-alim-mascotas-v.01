@@ -69,6 +69,7 @@ export function contenidoPdfCliente(
   email: string,
   codigoInterno: string,
   nombreComercio: string,
+  tipoComercio: string,
   cuit: string,
   zona: string,
   localidad: string,
@@ -87,6 +88,7 @@ export function contenidoPdfCliente(
     <div class="fila"><div class="etiqueta">Email</div><div class="valor">${esc(email || "—")}</div></div>
     <div class="fila"><div class="etiqueta">Código Interno</div><div class="valor">${esc(codigoInterno)}</div></div>
     <div class="fila"><div class="etiqueta">Nombre Comercio</div><div class="valor">${esc(nombreComercio)}</div></div>
+    <div class="fila"><div class="etiqueta">Tipo de comercio</div><div class="valor">${esc(tipoComercio || "—")}</div></div>
     <div class="fila"><div class="etiqueta">CUIT</div><div class="valor">${esc(cuit)}</div></div>
     <div class="fila"><div class="etiqueta">Zona</div><div class="valor">${esc(zona || "—")}</div></div>
     <div class="fila"><div class="etiqueta">Localidad/Ciudad</div><div class="valor">${esc(localidad || "—")}</div></div>

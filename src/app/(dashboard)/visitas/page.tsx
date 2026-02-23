@@ -124,6 +124,7 @@ export default async function VisitasPage({
         codigo_interno,
         cuit,
         id_zona,
+        id_tipo_comercio,
         id_vendedor_frecuente,
         id_transportista_frecuente,
         localidad,
@@ -131,7 +132,8 @@ export default async function VisitasPage({
         calle,
         numero,
         observaciones,
-        referencias_zonas(nombre)
+        referencias_zonas(nombre),
+        referencias_tipos_comercio(nombre)
       `)
       .order("nombre"),
     supabase
@@ -182,10 +184,13 @@ export default async function VisitasPage({
   const clientes = clientesRaw.map((c) => {
     const z = (c as Record<string, unknown>).referencias_zonas;
     const zonaNombre = Array.isArray(z) ? (z[0] as { nombre?: string } | null)?.nombre : (z as { nombre?: string } | null)?.nombre;
+    const tc = (c as Record<string, unknown>).referencias_tipos_comercio;
+    const tipoComercioNombre = Array.isArray(tc) ? (tc[0] as { nombre?: string } | null)?.nombre : (tc as { nombre?: string } | null)?.nombre;
     const cAny = c as Record<string, unknown>;
     return {
       ...c,
       zona_nombre: zonaNombre ?? null,
+      tipo_comercio_nombre: tipoComercioNombre ?? null,
       vendedor_nombre: cAny.id_vendedor_frecuente ? vendedoresMap.get(cAny.id_vendedor_frecuente as string) ?? null : null,
       transportista_nombre: cAny.id_transportista_frecuente ? transportistasMap.get(cAny.id_transportista_frecuente as string) ?? null : null,
     };

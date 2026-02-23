@@ -18,8 +18,10 @@ type ClienteFull = {
   codigo_interno?: string | null;
   cuit?: string | null;
   id_zona?: string | null;
+  id_tipo_comercio?: string | null;
   id_vendedor_frecuente?: string | null;
   zona_nombre?: string | null;
+  tipo_comercio_nombre?: string | null;
   vendedor_nombre?: string | null;
   transportista_nombre?: string | null;
   localidad?: string | null;
@@ -469,55 +471,29 @@ export function VisitasClient({
                             className="p-1 rounded hover:bg-black/20 md:hidden"
                             title="Ver detalles"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </button>
                           {/* Contenido completo en desktop */}
-                          <div className="hidden md:block">
-                            <div className="font-medium truncate">
-                              {idx + 1}º Visita · {v.clientes?.nombre || "—"}
-                            </div>
-                            <div className="flex items-center gap-1 mt-0.5 min-w-0">
-                              <div className="flex gap-0.5 shrink-0">
-                                {(() => {
-                                  const cli = clientesMap.get(v.id_cliente);
-                                  const tieneUbicacion = cli?.calle && cli?.numero != null && cli?.localidad && cli?.provincia;
-                                  return tieneUbicacion ? (
-                                    <a
-                                      href={urlGoogleMaps(cli!.localidad!, cli!.provincia!, cli!.calle!, cli!.numero!)}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        const url = urlGoogleMaps(cli!.localidad!, cli!.provincia!, cli!.calle!, cli!.numero!);
-                                        const w = window.open(url, "_blank", "noopener,noreferrer");
-                                        if (!w) window.location.href = url;
-                                      }}
-                                      className="p-0.5 rounded hover:bg-black/20"
-                                      title="Ubicación"
-                                    >
-                                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                      </svg>
-                                    </a>
-                                  ) : null;
-                                })()}
-                                <button
-                                  onClick={() => abrirDetalle(v)}
-                                  className="p-0.5 rounded hover:bg-black/20"
-                                  title="Ver detalles"
-                                >
-                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
-                                </button>
+                          <div className="hidden md:flex md:items-start md:justify-between md:gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="font-medium truncate">
+                                {ESTADOS.find((e) => e.value === v.estado)?.label ?? v.estado} · {idx + 1}º Visita · {v.clientes?.nombre || "—"}
                               </div>
-                              <span className="truncate opacity-90 min-w-0 flex-1">
+                              <div className="truncate opacity-90 mt-0.5">
                                 {formatTime(v.hora_inicio)} – {formatTime(v.hora_fin)}
-                              </span>
+                              </div>
                             </div>
+                            <button
+                              onClick={() => abrirDetalle(v)}
+                              className="p-1 rounded hover:bg-black/20 shrink-0 self-center"
+                              title="Ver detalles"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            </button>
                           </div>
                         </div>
                       ))}
@@ -666,8 +642,8 @@ export function VisitasClient({
 
       {/* Modal Editar */}
       {modal === "editar" && visitaEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto border border-slate-700">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={handleCancelarConConfirmar}>
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto border border-slate-700" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-lg font-semibold text-slate-200">Editar visita</h2>
             {error && (
               <div className="mt-2 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
@@ -805,9 +781,9 @@ export function VisitasClient({
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setModal(null)}>
             <div className="bg-slate-850 rounded-xl w-full max-w-lg max-h-[90vh] overflow-hidden flex flex-col border border-slate-700 shadow-xl" onClick={(e) => e.stopPropagation()}>
-              <div className="flex-shrink-0 px-6 py-4 border-b border-slate-700 flex items-center justify-between">
+              <div className="flex-shrink-0 px-6 py-4 border-b border-slate-700">
                 <h2 className="text-lg font-semibold text-slate-200">Detalle de visita</h2>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 mt-3">
                   {tieneUbicacion && (
                     <a
                       href={urlGoogleMaps(cli!.localidad!, cli!.provincia!, cli!.calle!, cli!.numero!)}
@@ -831,14 +807,14 @@ export function VisitasClient({
                   )}
                   {canEdit && (
                     <Link
-                      href={`/auditorias?nueva=1&id_cliente=${visitaDetalle.id_cliente}&id_vendedor=${visitaDetalle.id_vendedor}&id_visita=${visitaDetalle.id}`}
+                      href={`/auditorias/nueva?id_cliente=${visitaDetalle.id_cliente}&id_vendedor=${visitaDetalle.id_vendedor}&id_visita=${visitaDetalle.id}`}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg text-sm"
-                      title="Nueva auditoría"
+                      title="Auditoría"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                       </svg>
-                      Nueva auditoría
+                      Auditoría
                     </Link>
                   )}
                   <button
@@ -906,6 +882,7 @@ export function VisitasClient({
                         <div><dt className="text-slate-500 inline">Email:</dt> <dd className="text-slate-200 inline ml-1">{cli.email ?? "—"}</dd></div>
                         <div><dt className="text-slate-500 inline">Código interno:</dt> <dd className="text-slate-200 inline ml-1">{cli.codigo_interno ?? "—"}</dd></div>
                         <div><dt className="text-slate-500 inline">CUIT:</dt> <dd className="text-slate-200 inline ml-1">{cli.cuit ?? "—"}</dd></div>
+                        <div><dt className="text-slate-500 inline">Tipo de comercio:</dt> <dd className="text-slate-200 inline ml-1">{cli.tipo_comercio_nombre ?? "—"}</dd></div>
                         <div><dt className="text-slate-500 inline">Zona:</dt> <dd className="text-slate-200 inline ml-1">{cli.zona_nombre ?? "—"}</dd></div>
                         <div><dt className="text-slate-500 inline">Localidad/Ciudad:</dt> <dd className="text-slate-200 inline ml-1">{cli.localidad ?? "—"}</dd></div>
                         <div><dt className="text-slate-500 inline">Provincia:</dt> <dd className="text-slate-200 inline ml-1">{cli.provincia ?? "—"}</dd></div>

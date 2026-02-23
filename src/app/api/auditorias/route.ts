@@ -60,6 +60,12 @@ export async function POST(request: Request) {
     clasificacion_cliente,
     firma_auditor,
     firma_responsable,
+    observaciones_generales,
+    puntuacion_cliente_360,
+    puntuacion_vendedor_360,
+    puntuacion_repartidor_360,
+    puntuacion_general_360,
+    resultado_360,
     } = body;
 
     if (!id_cliente || !id_vendedor || !fecha) {
@@ -69,9 +75,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { data, error } = await supabase
-    .from("registro_auditoria")
-    .insert({
+    const insertBase: Record<string, unknown> = {
       id_comercio: usuario.id_comercio,
       id_cliente,
       id_vendedor,
@@ -104,7 +108,37 @@ export async function POST(request: Request) {
       clasificacion_cliente: clasificacion_cliente || null,
       firma_auditor: firma_auditor || null,
       firma_responsable: firma_responsable || null,
-    })
+      observaciones_generales: observaciones_generales ?? null,
+      puntuacion_cliente_360: puntuacion_cliente_360 ?? null,
+      puntuacion_vendedor_360: puntuacion_vendedor_360 ?? null,
+      puntuacion_repartidor_360: puntuacion_repartidor_360 ?? null,
+      puntuacion_general_360: puntuacion_general_360 ?? null,
+      resultado_360: resultado_360 ?? null,
+    };
+
+    const CAMPOS_360 = [
+      "cliente_eval_vendedor_pasa_regularmente", "cliente_eval_vendedor_responde", "cliente_eval_vendedor_cumple",
+      "cliente_eval_vendedor_promos", "cliente_eval_vendedor_entendimiento", "cliente_eval_vendedor_actitud", "cliente_eval_vendedor_facilidad",
+      "cliente_eval_transporte_horario", "cliente_eval_transporte_avisa", "cliente_eval_transporte_trato",
+      "cliente_eval_transporte_completo", "cliente_eval_transporte_estado", "cliente_eval_transporte_descarga", "cliente_eval_transporte_actitud",
+      "vendedor_eval_cliente_atencion", "vendedor_eval_cliente_predisposicion", "vendedor_eval_cliente_pedidos",
+      "vendedor_eval_cliente_condiciones", "vendedor_eval_cliente_sugerencias", "vendedor_eval_cliente_exhibicion", "vendedor_eval_cliente_orden",
+      "transporte_eval_cliente_atencion", "transporte_eval_cliente_descarga", "transporte_eval_cliente_firma",
+      "transporte_eval_cliente_horarios", "transporte_eval_cliente_espacio", "transporte_eval_cliente_demoras", "transporte_eval_cliente_predisposicion",
+      "vendedor_eval_transporte_comunicacion", "vendedor_eval_transporte_cumplimiento", "vendedor_eval_transporte_avisos",
+      "vendedor_eval_transporte_coordinacion", "vendedor_eval_transporte_errores",
+      "transporte_eval_vendedor_claridad", "transporte_eval_vendedor_correctos", "transporte_eval_vendedor_cambios",
+      "transporte_eval_vendedor_coordinacion", "transporte_eval_vendedor_confusion",
+    ];
+    for (const key of CAMPOS_360) {
+      if (key in body && body[key] != null) {
+        insertBase[key] = body[key];
+      }
+    }
+
+    const { data, error } = await supabase
+    .from("registro_auditoria")
+    .insert(insertBase)
     .select("id")
     .single();
 

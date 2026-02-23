@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-type Cliente = { id: string; nombre: string; id_transportista_frecuente?: string | null };
+type Cliente = { id: string; nombre: string; id_transportista_frecuente?: string | null; tipo_comercio_nombre?: string | null };
 type Vendedor = { id: string; nombre: string };
 type Visita = { id: string; fecha_visita: string; id_cliente?: string; id_vendedor?: string };
 type Transportista = { id: string; nombre: string };
@@ -28,6 +28,10 @@ type Auditoria = {
   puntuacion_cliente: number | null;
   puntuacion_vendedor: number | null;
   puntuacion_repartidor: number | null;
+  puntuacion_cliente_360?: number | null;
+  puntuacion_vendedor_360?: number | null;
+  puntuacion_general_360?: number | null;
+  resultado_360?: string | null;
   clasificacion_cliente: string | null;
   condiciones_generales?: Record<string, unknown> | null;
   exhibicion_productos?: Record<string, unknown> | null;
@@ -160,52 +164,6 @@ export function AuditoriasClient({
       if (v?.fecha_visita) setFormFecha(v.fecha_visita);
     }
   }, [formVisita, visitas]);
-
-  useEffect(() => {
-    if (abrirNuevaDesdeVisita && canEdit) {
-      setFormCliente(abrirNuevaDesdeVisita.id_cliente);
-      setFormVendedor(abrirNuevaDesdeVisita.id_vendedor);
-      setFormVisita(abrirNuevaDesdeVisita.id_visita);
-      const cli = clientes.find((c) => c.id === abrirNuevaDesdeVisita.id_cliente);
-      setFormTransportista(cli?.id_transportista_frecuente ?? "");
-      setFormFecha(new Date().toISOString().slice(0, 10));
-      setFormLocalLimpio(null);
-      setFormProductosExhibidos("");
-      setFormStockSuficiente(null);
-      setFormRotacion("");
-      setFormPlazosPago(null);
-      setFormMetodosPago([]);
-      setFormPuntuacionCliente("");
-      setFormPuntuacionVendedor("");
-      setFormPuntuacionRepartidor("");
-      setFormClasificacion("");
-      setFormObservaciones("");
-      setFormFrecuenciaEnvios("");
-      setFormPromedioKg("");
-      setFormMontoCompra("");
-      setFormCondicionesLocal("");
-      setFormCondicionesIluminacion("");
-      setFormCondicionesSector("");
-      setFormCondicionesHigiene("");
-      setFormExhibicionVisible("");
-      setFormExhibicionUbicacion("");
-      setFormExhibicionCarteleria("");
-      setFormExhibicionComparacion("");
-      setFormExhibicionObs("");
-      setFormStockObs("");
-      setFormPreciosObs("");
-      setFormRelacionObs("");
-      setFormGestionObs("");
-      setFormConocimientoObs("");
-      setFormRelacionClienteObs("");
-      setFormCumplimientoObs("");
-      setFormLogisticaObs("");
-      setError(null);
-      setAuditoriaEdit(null);
-      setModal("nuevo");
-      router.replace("/auditorias");
-    }
-  }, [abrirNuevaDesdeVisita, canEdit, router, clientes]);
 
   function abrirNuevo() {
     setFormCliente("");
@@ -511,15 +469,6 @@ export function AuditoriasClient({
 
   return (
     <div className="mt-6">
-      {canEdit && (
-        <button
-          onClick={abrirNuevo}
-          className="mb-4 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium"
-        >
-          Nueva auditoría
-        </button>
-      )}
-
       <div className="bg-slate-850 rounded-xl border border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -543,7 +492,7 @@ export function AuditoriasClient({
                     colSpan={canEdit ? 7 : 6}
                     className="py-8 px-4 text-center text-slate-400"
                   >
-                    No hay auditorías registradas. {canEdit && "Creá una para comenzar."}
+                    No hay auditorías registradas. Creá una desde una visita programada.
                   </td>
                 </tr>
               ) : (
@@ -558,20 +507,39 @@ export function AuditoriasClient({
                     <td className="py-3 px-4 text-slate-300">
                       {(a.vendedores as { nombre: string } | null)?.nombre ?? "—"}
                     </td>
-                    <td className="py-3 px-4 text-slate-300">{a.puntuacion_cliente ?? "—"}</td>
-                    <td className="py-3 px-4 text-slate-300">{a.puntuacion_vendedor ?? "—"}</td>
-                    <td className="py-3 px-4 text-slate-300">{clasificacionLabel(a.clasificacion_cliente)}</td>
+                    <td className="py-3 px-4 text-slate-300">
+                      {a.puntuacion_cliente_360 != null ? a.puntuacion_cliente_360.toFixed(1) : (a.puntuacion_cliente ?? "—")}
+                    </td>
+                    <td className="py-3 px-4 text-slate-300">
+                      {a.puntuacion_vendedor_360 != null ? a.puntuacion_vendedor_360.toFixed(1) : (a.puntuacion_vendedor ?? "—")}
+                    </td>
+                    <td className="py-3 px-4 text-slate-300">
+                      {a.resultado_360 ?? clasificacionLabel(a.clasificacion_cliente)}
+                    </td>
                     {canEdit && (
                       <td className="py-3 px-4 text-right">
-                        <button
-                          onClick={() => abrirEditar(a)}
-                          className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded"
-                          title="Editar"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                          </svg>
-                        </button>
+                        {a.resultado_360 != null ? (
+                          <Link
+                            href={`/auditorias/nueva?id=${a.id}`}
+                            className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded inline-block"
+                            title="Ver / Editar auditoría 360°"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </Link>
+                        ) : (
+                          <button
+                            onClick={() => abrirEditar(a)}
+                            className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded"
+                            title="Editar"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </button>
+                        )}
                         {canDelete && (
                           <button
                             onClick={() => setDeleteConfirm(a.id)}
@@ -692,6 +660,12 @@ export function AuditoriasClient({
                         : "Ninguno"}
                     </span>
                   </div>
+                  <div>
+                    <span className="text-xs text-slate-500 block mb-0.5">Tipo de comercio</span>
+                    <span className="text-slate-200 font-medium">
+                      {clientes.find((c) => c.id === formCliente)?.tipo_comercio_nombre ?? "—"}
+                    </span>
+                  </div>
                   {formVisita && (
                     <Link
                       href={`/visitas?ver=${formVisita}`}
@@ -712,7 +686,12 @@ export function AuditoriasClient({
                       <label className="block text-sm font-medium text-slate-700 mb-1">Cliente *</label>
                       <select
                         value={formCliente}
-                        onChange={(e) => setFormCliente(e.target.value)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormCliente(val);
+                          const cli = clientes.find((c) => c.id === val);
+                          setFormTransportista(cli?.id_transportista_frecuente ?? "");
+                        }}
                         required
                         className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
                       >
@@ -736,34 +715,6 @@ export function AuditoriasClient({
                         ))}
                       </select>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Transportista</label>
-                      <select
-                        value={formTransportista}
-                        onChange={(e) => setFormTransportista(e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-                      >
-                        <option value="">Ninguno</option>
-                        {transportistas.map((t) => (
-                          <option key={t.id} value={t.id}>{t.nombre}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
-                {formCliente && (
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Transportista</label>
-                    <select
-                      value={formTransportista}
-                      onChange={(e) => setFormTransportista(e.target.value)}
-                      className="w-full max-w-xs px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
-                    >
-                      <option value="">Ninguno</option>
-                      {transportistas.map((t) => (
-                        <option key={t.id} value={t.id}>{t.nombre}</option>
-                      ))}
-                    </select>
                   </div>
                 )}
               </div>

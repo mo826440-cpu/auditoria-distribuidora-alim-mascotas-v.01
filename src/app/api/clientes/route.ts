@@ -48,6 +48,7 @@ export async function POST(request: Request) {
     nombre,
     cuit,
     id_zona,
+    id_tipo_comercio,
     localidad,
     provincia,
     calle,
@@ -104,6 +105,9 @@ export async function POST(request: Request) {
 
   if (!id_zona) {
     return NextResponse.json({ error: "La zona es obligatoria" }, { status: 400 });
+  }
+  if (!id_tipo_comercio) {
+    return NextResponse.json({ error: "El tipo de comercio es obligatorio" }, { status: 400 });
   }
   if (!String(localidad || "").trim()) {
     return NextResponse.json({ error: "La localidad/ciudad es obligatoria" }, { status: 400 });
@@ -180,6 +184,7 @@ export async function POST(request: Request) {
       nombre: String(nombre).trim(),
       cuit: cuitStr,
       id_zona: id_zona || null,
+      id_tipo_comercio: id_tipo_comercio || null,
       localidad: localidad ? String(localidad).trim() : null,
       provincia: provincia ? String(provincia).trim() : "Córdoba",
       calle: String(calle).trim(),
