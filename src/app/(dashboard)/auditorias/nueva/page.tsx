@@ -60,11 +60,9 @@ export default async function AuditoriaNuevaPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-[var(--foreground)]">
-        {idAuditoria ? "Auditoría 360°" : "Nueva auditoría 360°"}
-      </h1>
+      <h1 className="text-2xl font-bold text-[var(--foreground)]">Auditoría</h1>
       <p className="mt-1 text-slate-300">
-        {idAuditoria ? "Ver o editar evaluación 360°" : "Evaluación 360° desde visita programada"}
+        {idAuditoria ? "Ver o editar" : "Completar todos los campos de evaluación para guardar"}
       </p>
       <Auditoria360Client
         clientes={clientes}

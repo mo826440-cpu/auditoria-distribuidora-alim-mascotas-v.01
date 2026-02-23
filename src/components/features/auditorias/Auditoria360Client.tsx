@@ -77,6 +77,8 @@ const CAMPOS_360 = {
   ],
 };
 
+const TODOS_LOS_CAMPOS_360 = (Object.values(CAMPOS_360) as { key: string }[][]).flat().map((c) => c.key);
+
 export function Auditoria360Client({
   clientes,
   vendedores,
@@ -195,6 +197,11 @@ export function Auditoria360Client({
       ? (puntajeCliente + puntajeVendedor + puntajeTransporte) / 3
       : 0;
 
+  const todosLosCamposCargados = TODOS_LOS_CAMPOS_360.every(
+    (key) => typeof formValues[key] === "number" && formValues[key] >= 1 && formValues[key] <= 4
+  );
+  const puedeGuardar = !!formCliente && !!formVendedor && !!formFecha && todosLosCamposCargados;
+
   const handleCancelarConConfirmar = useCallback(() => {
     if (window.confirm("¿Está seguro que desea cancelar? Se perderán los cambios no guardados.")) {
       router.push("/auditorias");
@@ -240,6 +247,10 @@ export function Auditoria360Client({
     setError(null);
     if (!formCliente || !formVendedor || !formFecha) {
       setError("Cliente, vendedor y fecha son obligatorios.");
+      return;
+    }
+    if (!todosLosCamposCargados) {
+      setError("Debe completar todos los campos de evaluación (1 a 4 en cada ítem) para poder guardar la auditoría.");
       return;
     }
     if (!idAuditoria && !window.confirm("¿Está de acuerdo en cerrar la auditoría? Se registrarán todos los datos y la visita pasará a estado Realizada.")) {
@@ -567,7 +578,7 @@ export function Auditoria360Client({
         <div className="flex flex-wrap gap-3">
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !puedeGuardar}
             className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium disabled:opacity-50"
           >
             {loading ? "Guardando..." : idAuditoria ? "Actualizar auditoría" : "Guardar auditoría"}
