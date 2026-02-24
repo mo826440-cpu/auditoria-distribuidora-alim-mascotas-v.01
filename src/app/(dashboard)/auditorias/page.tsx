@@ -58,6 +58,7 @@ export default async function AuditoriasPage({
         puntuacion_vendedor_360,
         puntuacion_general_360,
         resultado_360,
+        puntaje_final,
         clasificacion_cliente,
         condiciones_generales,
         exhibicion_productos,

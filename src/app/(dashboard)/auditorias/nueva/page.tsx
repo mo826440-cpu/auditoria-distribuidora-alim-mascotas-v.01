@@ -38,7 +38,7 @@ export default async function AuditoriaNuevaPage({
     supabase.from("vendedores").select("id, nombre").order("nombre"),
     supabase
       .from("programacion_visitas")
-      .select("id, fecha_visita, id_cliente, id_vendedor")
+      .select("id, fecha_visita, id_cliente, id_vendedor, hora_inicio, hora_fin")
       .order("fecha_visita", { ascending: false })
       .limit(100),
     supabase.from("transportistas").select("id, nombre").order("nombre"),

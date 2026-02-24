@@ -135,6 +135,24 @@ export async function POST(request: Request) {
         insertBase[key] = body[key];
       }
     }
+    insertBase.hora_inicio = body.hora_inicio ?? null;
+    insertBase.hora_fin = body.hora_fin ?? null;
+    insertBase.analisis_final = body.analisis_final ?? null;
+    insertBase.puntaje_final = body.puntaje_final ?? null;
+    const CAMPOS_EVALUACION = [
+      "eval_relacion_cumplimiento_pagos", "eval_relacion_formas_pago", "eval_relacion_frecuencia_compra",
+      "eval_relacion_comunicacion_ventas", "eval_relacion_trato_general",
+      "eval_ventas_volumen", "eval_ventas_rotacion", "eval_ventas_interes_nuevos",
+      "eval_logistica_facilidad_entrega", "eval_logistica_horarios_recepcion", "eval_logistica_espacio_descarga", "eval_logistica_organizacion_recibir",
+      "eval_local_exhibicion", "eval_local_orden_limpieza", "eval_local_iluminacion", "eval_local_espacio_disponible", "eval_local_ubicacion",
+      "eval_competencia_presencia", "eval_competencia_participacion",
+      "eval_potencial_crecimiento", "eval_potencial_cantidad_clientes", "eval_potencial_tamano_local",
+    ];
+    for (const key of CAMPOS_EVALUACION) {
+      if (key in body && body[key] != null) {
+        insertBase[key] = body[key];
+      }
+    }
 
     const { data, error } = await supabase
     .from("registro_auditoria")

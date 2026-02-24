@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { estrellasDesdePuntaje } from "@/data/evaluacionCriterios";
 
 type Cliente = { id: string; nombre: string; id_transportista_frecuente?: string | null; tipo_comercio_nombre?: string | null };
 type Vendedor = { id: string; nombre: string };
@@ -32,6 +33,7 @@ type Auditoria = {
   puntuacion_vendedor_360?: number | null;
   puntuacion_general_360?: number | null;
   resultado_360?: string | null;
+  puntaje_final?: number | null;
   clasificacion_cliente: string | null;
   condiciones_generales?: Record<string, unknown> | null;
   exhibicion_productos?: Record<string, unknown> | null;
@@ -464,24 +466,18 @@ export function AuditoriasClient({
     }
   }
 
-  const clasificacionLabel = (v: string | null) =>
-    CLASIFICACIONES.find((c) => c.value === v)?.label ?? "—";
-
   return (
     <div className="mt-6">
       <div className="bg-slate-850 rounded-xl border border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-800 border-b border-slate-700">
+            <thead className="bg-primary-600 border-b border-primary-700">
               <tr>
-                <th className="text-left py-3 px-4 font-medium text-slate-200">Fecha</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-200">Cliente</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-200">Vendedor</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-200">Punt. cliente</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-200">Punt. vendedor</th>
-                <th className="text-left py-3 px-4 font-medium text-slate-200">Clasificación</th>
+                <th className="text-left py-3 px-4 font-semibold text-white">Fecha</th>
+                <th className="text-left py-3 px-4 font-semibold text-white">Cliente</th>
+                <th className="text-left py-3 px-4 font-semibold text-white">Clasificación</th>
                 {canEdit && (
-                  <th className="text-right py-3 px-4 font-medium text-slate-200">Acciones</th>
+                  <th className="text-right py-3 px-4 font-semibold text-white">Acciones</th>
                 )}
               </tr>
             </thead>
@@ -489,72 +485,53 @@ export function AuditoriasClient({
               {auditorias.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={canEdit ? 7 : 6}
+                    colSpan={canEdit ? 4 : 3}
                     className="py-8 px-4 text-center text-slate-400"
                   >
                     No hay auditorías registradas. Creá una desde una visita programada.
                   </td>
                 </tr>
               ) : (
-                auditorias.map((a) => (
-                  <tr key={a.id} className="border-b border-slate-700 hover:bg-slate-700/50">
-                    <td className="py-3 px-4 text-slate-300">
-                      {new Date(a.fecha + "T12:00:00").toLocaleDateString("es-AR")}
-                    </td>
-                    <td className="py-3 px-4 font-medium text-slate-200">
-                      {(a.clientes as { nombre: string } | null)?.nombre ?? "—"}
-                    </td>
-                    <td className="py-3 px-4 text-slate-300">
-                      {(a.vendedores as { nombre: string } | null)?.nombre ?? "—"}
-                    </td>
-                    <td className="py-3 px-4 text-slate-300">
-                      {a.puntuacion_cliente_360 != null ? a.puntuacion_cliente_360.toFixed(1) : (a.puntuacion_cliente ?? "—")}
-                    </td>
-                    <td className="py-3 px-4 text-slate-300">
-                      {a.puntuacion_vendedor_360 != null ? a.puntuacion_vendedor_360.toFixed(1) : (a.puntuacion_vendedor ?? "—")}
-                    </td>
-                    <td className="py-3 px-4 text-slate-300">
-                      {a.resultado_360 ?? clasificacionLabel(a.clasificacion_cliente)}
-                    </td>
-                    {canEdit && (
-                      <td className="py-3 px-4 text-right">
-                        {a.resultado_360 != null ? (
+                auditorias.map((a) => {
+                  const estrellas = a.puntaje_final != null ? estrellasDesdePuntaje(a.puntaje_final) : (a.puntuacion_general_360 != null ? Math.round(Math.min(5, Math.max(1, Number(a.puntuacion_general_360)))) : 0);
+                  return (
+                    <tr key={a.id} className="border-b border-slate-700 hover:bg-slate-700/50 bg-slate-800/50">
+                      <td className="py-3 px-4 text-slate-300">
+                        {new Date(a.fecha + "T12:00:00").toLocaleDateString("es-AR")}
+                      </td>
+                      <td className="py-3 px-4 font-medium text-slate-200">
+                        {(a.clientes as { nombre: string } | null)?.nombre ?? "—"}
+                      </td>
+                      <td className="py-3 px-4">
+                        {estrellas > 0 ? (
+                          <span className="flex items-center gap-0.5" title={a.puntaje_final != null ? `${a.puntaje_final} puntos` : undefined}>
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <svg key={i} className={`w-5 h-5 ${i <= estrellas ? "text-yellow-400" : "text-slate-600"}`} fill={i <= estrellas ? "currentColor" : "none"} stroke="currentColor" strokeWidth={i <= estrellas ? 0 : 1.5} viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                              </svg>
+                            ))}
+                          </span>
+                        ) : (
+                          <span className="text-slate-500">—</span>
+                        )}
+                      </td>
+                      {canEdit && (
+                        <td className="py-3 px-4 text-right">
                           <Link
                             href={`/auditorias/nueva?id=${a.id}`}
-                            className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded inline-block"
-                            title="Ver / Editar auditoría 360°"
+                            className="p-1.5 text-slate-400 hover:text-primary-400 hover:bg-primary-900/40 rounded inline-block"
+                            title="Ver detalle auditoría"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
                           </Link>
-                        ) : (
-                          <button
-                            onClick={() => abrirEditar(a)}
-                            className="p-1.5 text-slate-500 hover:text-primary-600 hover:bg-primary-50 rounded"
-                            title="Editar"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                            </svg>
-                          </button>
-                        )}
-                        {canDelete && (
-                          <button
-                            onClick={() => setDeleteConfirm(a.id)}
-                            className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/40 rounded ml-1"
-                            title="Eliminar"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        )}
-                      </td>
-                    )}
-                  </tr>
-                ))
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
