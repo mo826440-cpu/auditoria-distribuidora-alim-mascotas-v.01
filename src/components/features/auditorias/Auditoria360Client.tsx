@@ -241,11 +241,15 @@ export function Auditoria360Client({
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error((data as { error?: string }).error || `Error ${res.status}`);
         if (formVisita) {
-          await fetch(`/api/visitas/${formVisita}`, {
+          const patchRes = await fetch(`/api/visitas/${formVisita}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ estado: "realizada" }),
           });
+          if (!patchRes.ok) {
+            const patchData = await patchRes.json().catch(() => ({}));
+            throw new Error((patchData as { error?: string }).error || "No se pudo actualizar la visita a Realizada.");
+          }
         }
       }
       router.push("/auditorias");
