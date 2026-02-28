@@ -7,9 +7,15 @@ export async function POST() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!supabaseUrl || !serviceRoleKey) {
+    const missing: string[] = [];
+    if (!supabaseUrl) missing.push("NEXT_PUBLIC_SUPABASE_URL");
+    if (!serviceRoleKey) missing.push("SUPABASE_SERVICE_ROLE_KEY");
+    if (missing.length > 0) {
       return NextResponse.json(
-        { error: "Configuración incompleta: faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en .env.local" },
+        {
+          error: `Configuración incompleta: faltan en .env.local: ${missing.join(", ")}. Reiniciá el servidor (npm run dev) después de agregarlas.`,
+          missing,
+        },
         { status: 500 }
       );
     }
@@ -37,43 +43,11 @@ export async function POST() {
       auth: { persistSession: false },
     });
 
-    let comercioId: string | null = null;
-    const { data: comercio, error: comercioError } = await supabaseAdmin
-      .from("comercios")
-      .select("id")
-      .limit(1)
-      .single();
-
-    if (comercioError && comercioError.code !== "PGRST116") {
-      return NextResponse.json(
-        { error: `Error al obtener comercio: ${comercioError.message}` },
-        { status: 500 }
-      );
-    }
-
-    if (comercio) {
-      comercioId = comercio.id;
-    } else {
-      const { data: newComercio, error: insertError } = await supabaseAdmin
-        .from("comercios")
-        .insert({ nombre: "Comercio de Prueba 01" })
-        .select("id")
-        .single();
-
-      if (insertError || !newComercio) {
-        return NextResponse.json(
-          { error: insertError?.message ?? "No se pudo crear comercio" },
-          { status: 500 }
-        );
-      }
-      comercioId = newComercio.id;
-    }
-
     const { data: existingUser } = await supabaseAdmin
       .from("usuarios")
       .select("id")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (existingUser) {
       return NextResponse.json({ ok: true, message: "Usuario ya existe" });
@@ -81,6 +55,25 @@ export async function POST() {
 
     const nombre = user.user_metadata?.nombre ?? user.email?.split("@")[0] ?? "Usuario";
     const rol = user.user_metadata?.rol ?? "administrador";
+
+    // Nueva cuenta = nuevo comercio para este usuario (formulario "Crear cuenta")
+    const nombreComercio = `Comercio de ${nombre}`;
+    const { data: newComercio, error: insertComercioError } = await supabaseAdmin
+      .from("comercios")
+      .insert({ nombre: nombreComercio })
+      .select("id")
+      .single();
+
+    if (insertComercioError || !newComercio) {
+      const msg = insertComercioError?.message ?? "No se pudo crear el comercio";
+      const code = insertComercioError?.code;
+      return NextResponse.json(
+        { error: msg, code, detail: insertComercioError?.details },
+        { status: 500 }
+      );
+    }
+
+    const comercioId = newComercio.id;
 
     const { error: insertUserError } = await supabaseAdmin.from("usuarios").insert({
       id: user.id,
@@ -91,8 +84,15 @@ export async function POST() {
     });
 
     if (insertUserError) {
+      if (insertUserError.code === "23505") {
+        return NextResponse.json({ ok: true, message: "Usuario ya existe" });
+      }
       return NextResponse.json(
-        { error: `Error al crear perfil: ${insertUserError.message}` },
+        {
+          error: `Error al crear perfil: ${insertUserError.message}`,
+          code: insertUserError.code,
+          detail: insertUserError.details,
+        },
         { status: 500 }
       );
     }
@@ -100,8 +100,9 @@ export async function POST() {
     return NextResponse.json({ ok: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Error inesperado";
+    const stack = err instanceof Error ? err.stack : undefined;
     return NextResponse.json(
-      { error: `Error del servidor: ${message}` },
+      { error: `Error del servidor: ${message}`, stack: stack?.split("\n").slice(0, 3) },
       { status: 500 }
     );
   }

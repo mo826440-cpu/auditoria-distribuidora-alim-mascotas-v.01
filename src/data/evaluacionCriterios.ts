@@ -1,10 +1,12 @@
 /**
- * Criterios de evaluación según Descripcion_Evaluacion.md.
- * Cada sección tiene criterios con escala 1-5 (opciones de 5 a 1).
+ * Criterios de EVALUACIÓN DEL CLIENTE según diseño (escala 3-2-1).
+ * 5 secciones: RELACIÓN COMERCIAL, VENTAS, LOGÍSTICA, LOCAL, POTENCIAL.
+ * Total 22 criterios, máx 66 puntos. Ponderación 20% por sesión.
  */
 export type CriterioEvaluacion = {
   key: string;
   label: string;
+  descripcion: string;
   opciones: { value: number; label: string }[];
 };
 
@@ -14,12 +16,10 @@ export type SeccionEvaluacion = {
   criterios: CriterioEvaluacion[];
 };
 
-const ESCALA_5 = (labels: [string, string, string, string, string]) => [
-  { value: 5, label: labels[0] },
-  { value: 4, label: labels[1] },
-  { value: 3, label: labels[2] },
-  { value: 2, label: labels[3] },
-  { value: 1, label: labels[4] },
+const ESCALA_3 = (labels: [string, string, string]) => [
+  { value: 3, label: labels[0] },
+  { value: 2, label: labels[1] },
+  { value: 1, label: labels[2] },
 ];
 
 export const SECCIONES_EVALUACION: SeccionEvaluacion[] = [
@@ -27,58 +27,52 @@ export const SECCIONES_EVALUACION: SeccionEvaluacion[] = [
     id: "relacion_comercial",
     titulo: "RELACIÓN COMERCIAL",
     criterios: [
-      { key: "eval_relacion_cumplimiento_pagos", label: "Cumplimiento de pagos", opciones: ESCALA_5(["Siempre en fecha", "Casi siempre en fecha", "A veces se atrasa", "Se atrasa seguido", "Muy incumplidor"]) },
-      { key: "eval_relacion_formas_pago", label: "Formas de pago habituales", opciones: ESCALA_5(["Contado", "Transferencia corta", "Cuenta corriente normal", "Plazos largos", "Pago complicado"]) },
-      { key: "eval_relacion_frecuencia_compra", label: "Frecuencia de compra", opciones: ESCALA_5(["Semanal", "Quincenal / mensual", "Cada 1–2 meses", "Cada varios meses", "Esporádico"]) },
-      { key: "eval_relacion_comunicacion_ventas", label: "Comunicación con ventas", opciones: ESCALA_5(["Muy fluida", "Fluida", "Normal", "Difícil", "Muy difícil"]) },
-      { key: "eval_relacion_trato_general", label: "Trato general", opciones: ESCALA_5(["Excelente trato", "Buen trato", "Trato normal", "Trato difícil", "Mal trato"]) },
+      { key: "eval3_relacion_trato_vendedor", label: "Trato con el vendedor", descripcion: "¿Cómo es el comportamiento del cliente con el vendedor?", opciones: ESCALA_3(["Muy respetuoso", "Normal", "Conflictivo"]) },
+      { key: "eval3_relacion_trato_empresa", label: "Trato con la empresa", descripcion: "¿Cómo es la relación general con la empresa?", opciones: ESCALA_3(["Muy buena", "Normal", "Difícil"]) },
+      { key: "eval3_relacion_comunicacion", label: "Comunicación", descripcion: "¿Qué tan fácil es comunicarse con el cliente?", opciones: ESCALA_3(["Muy buena", "Normal", "Complicada"]) },
+      { key: "eval3_relacion_resolucion_problemas", label: "Resolución de problemas", descripcion: "¿Cómo responde cuando hay inconvenientes?", opciones: ESCALA_3(["Colabora", "Normal", "Complica"]) },
+      { key: "eval3_relacion_cumplimiento_pagos", label: "Cumplimiento de pagos", descripcion: "¿Qué tan bien cumple con los pagos?", opciones: ESCALA_3(["Al día", "Poca demora", "Muy atrasado"]) },
     ],
   },
   {
     id: "ventas",
     titulo: "VENTAS",
     criterios: [
-      { key: "eval_ventas_volumen", label: "Volumen de compra", opciones: ESCALA_5(["Muy alto", "Alto", "Medio", "Bajo", "Muy bajo"]) },
-      { key: "eval_ventas_rotacion", label: "Rotación de productos", opciones: ESCALA_5(["Muy rápida", "Rápida", "Normal", "Lenta", "Muy lenta"]) },
-      { key: "eval_ventas_interes_nuevos", label: "Interés en nuevos productos", opciones: ESCALA_5(["Muy interesado", "Interesado", "Normal", "Poco interesado", "No interesado"]) },
+      { key: "eval3_ventas_frecuencia_compra", label: "Frecuencia de compra", descripcion: "¿Cada cuánto realiza pedidos?", opciones: ESCALA_3(["Frecuente", "Ocasional", "Poco frecuente"]) },
+      { key: "eval3_ventas_volumen", label: "Volumen de productos", descripcion: "¿Cantidad de productos que compra?", opciones: ESCALA_3(["Alto", "Medio", "Bajo"]) },
+      { key: "eval3_ventas_rotacion", label: "Rotación de productos", descripcion: "¿Qué tan rápido vende los productos?", opciones: ESCALA_3(["Alta", "Normal", "Baja"]) },
+      { key: "eval3_ventas_participacion_productos", label: "Participación de nuestros productos", descripcion: "¿Presencia de nuestros productos en el local?", opciones: ESCALA_3(["Alta", "Normal", "Baja"]) },
     ],
   },
   {
     id: "logistica",
     titulo: "LOGÍSTICA",
     criterios: [
-      { key: "eval_logistica_facilidad_entrega", label: "Facilidad de entrega", opciones: ESCALA_5(["Muy fácil", "Fácil", "Normal", "Difícil", "Muy difícil"]) },
-      { key: "eval_logistica_horarios_recepcion", label: "Horarios de recepción", opciones: ESCALA_5(["Muy amplios", "Amplios", "Normales", "Limitados", "Muy limitados"]) },
-      { key: "eval_logistica_espacio_descarga", label: "Espacio para descarga", opciones: ESCALA_5(["Mucho espacio", "Buen espacio", "Normal", "Poco espacio", "Sin espacio"]) },
-      { key: "eval_logistica_organizacion_recibir", label: "Organización al recibir", opciones: ESCALA_5(["Muy organizado", "Organizado", "Normal", "Desorganizado", "Muy desorganizado"]) },
+      { key: "eval3_logistica_recepcion_pedidos", label: "Recepción de pedidos", descripcion: "¿Qué tan fácil es entregar mercadería?", opciones: ESCALA_3(["Muy fácil", "Normal", "Difícil"]) },
+      { key: "eval3_logistica_trato_transportista", label: "Trato con el transportista", descripcion: "¿Cómo trata al repartidor?", opciones: ESCALA_3(["Respetuoso", "Normal", "Problemático"]) },
+      { key: "eval3_logistica_espacio_descarga", label: "Espacio para descargar", descripcion: "¿Lugar disponible para descargar?", opciones: ESCALA_3(["Amplio", "Normal", "Limitado"]) },
+      { key: "eval3_logistica_organizacion_recibir", label: "Organización al recibir", descripcion: "¿Preparación para recibir pedidos?", opciones: ESCALA_3(["Organizado", "Normal", "Desorganizado"]) },
     ],
   },
   {
     id: "local",
     titulo: "LOCAL",
     criterios: [
-      { key: "eval_local_exhibicion", label: "Exhibición de productos", opciones: ESCALA_5(["Muy visible", "Visible", "Normal", "Poco visible", "No visible"]) },
-      { key: "eval_local_orden_limpieza", label: "Orden y limpieza", opciones: ESCALA_5(["Muy ordenado y limpio", "Ordenado", "Normal", "Desordenado", "Muy desordenado"]) },
-      { key: "eval_local_iluminacion", label: "Iluminación", opciones: ESCALA_5(["Muy buena", "Buena", "Normal", "Mala", "Muy mala"]) },
-      { key: "eval_local_espacio_disponible", label: "Espacio disponible", opciones: ESCALA_5(["Mucho espacio", "Buen espacio", "Normal", "Poco espacio", "Sin espacio"]) },
-      { key: "eval_local_ubicacion", label: "Ubicación", opciones: ESCALA_5(["Muy buena ubicación", "Buena ubicación", "Normal", "Mala ubicación", "Muy mala ubicación"]) },
-    ],
-  },
-  {
-    id: "competencia",
-    titulo: "COMPETENCIA",
-    criterios: [
-      { key: "eval_competencia_presencia", label: "Presencia de competencia", opciones: ESCALA_5(["Sin competencia", "Poca competencia", "Competencia normal", "Mucha competencia", "Dominado por competencia"]) },
-      { key: "eval_competencia_participacion", label: "Participación de nuestros productos", opciones: ESCALA_5(["Muy alta", "Alta", "Media", "Baja", "Muy baja"]) },
+      { key: "eval3_local_estado", label: "Estado del local", descripcion: "¿Qué tan ordenado y limpio está?", opciones: ESCALA_3(["Muy bueno", "Normal", "Malo"]) },
+      { key: "eval3_local_exhibicion", label: "Exhibición de productos", descripcion: "¿Cómo muestra los productos?", opciones: ESCALA_3(["Muy bueno", "Normal", "Malo"]) },
+      { key: "eval3_local_espacio", label: "Espacio disponible", descripcion: "¿Lugar para almacenar productos?", opciones: ESCALA_3(["Amplio", "Suficiente", "Reducido"]) },
+      { key: "eval3_local_iluminacion", label: "Iluminación", descripcion: "¿Qué tan bien iluminado está el local?", opciones: ESCALA_3(["Buena", "Normal", "Mala"]) },
     ],
   },
   {
     id: "potencial",
     titulo: "POTENCIAL",
     criterios: [
-      { key: "eval_potencial_crecimiento", label: "Posibilidad de crecimiento", opciones: ESCALA_5(["Mucho potencial", "Buen potencial", "Potencial normal", "Poco potencial", "Sin potencial"]) },
-      { key: "eval_potencial_cantidad_clientes", label: "Cantidad de clientes", opciones: ESCALA_5(["Muchísimos", "Muchos", "Normal", "Pocos", "Muy pocos"]) },
-      { key: "eval_potencial_tamano_local", label: "Tamaño del local", opciones: ESCALA_5(["Muy grande", "Grande", "Mediano", "Chico", "Muy chico"]) },
+      { key: "eval3_potencial_ubicacion", label: "Ubicación", descripcion: "¿Qué tan favorable es la ubicación del negocio?", opciones: ESCALA_3(["Muy buena", "Normal", "Mala"]) },
+      { key: "eval3_potencial_cantidad_clientes", label: "Cantidad de clientes", descripcion: "¿Movimiento de clientes?", opciones: ESCALA_3(["Alta", "Media", "Baja"]) },
+      { key: "eval3_potencial_crecimiento", label: "Posibilidad de crecimiento", descripcion: "¿Potencial de aumentar ventas?", opciones: ESCALA_3(["Alta", "Media", "Baja"]) },
+      { key: "eval3_potencial_tamano_local", label: "Tamaño del local", descripcion: "¿Dimensión del negocio?", opciones: ESCALA_3(["Grande", "Mediano", "Chico"]) },
+      { key: "eval3_potencial_presencia_competencia", label: "Presencia de competencia", descripcion: "¿Cantidad de competidores cerca?", opciones: ESCALA_3(["Baja", "Normal", "Alta"]) },
     ],
   },
 ];
@@ -87,12 +81,14 @@ export const TODAS_LAS_CLAVES_EVALUACION = SECCIONES_EVALUACION.flatMap((s) =>
   s.criterios.map((c) => c.key)
 );
 
+export const PUNTAJE_MAXIMO_EVALUACION = 66; // 22 criterios × 3
+
 export function puntajeMaximo(): number {
-  return SECCIONES_EVALUACION.reduce((acc, s) => acc + s.criterios.length * 5, 0);
+  return PUNTAJE_MAXIMO_EVALUACION;
 }
 
 export function estrellasDesdePuntaje(puntaje: number): number {
-  const max = puntajeMaximo();
+  const max = PUNTAJE_MAXIMO_EVALUACION;
   if (max === 0) return 0;
   const ratio = puntaje / max;
   if (ratio >= 0.9) return 5;

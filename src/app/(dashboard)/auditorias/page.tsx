@@ -60,6 +60,8 @@ export default async function AuditoriasPage({
         resultado_360,
         puntaje_final,
         clasificacion_cliente,
+        estado_auditoria,
+        puntaje_satisfaccion,
         condiciones_generales,
         exhibicion_productos,
         stock_rotacion,

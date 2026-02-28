@@ -78,6 +78,7 @@ const ESTADO_COLORS: Record<string, string> = {
   realizada: "bg-green-500/80 text-green-950",
   cancelada: "bg-red-400/80 text-red-950",
   reprogramada: "bg-orange-500/80 text-orange-950",
+  parcial: "bg-amber-500/80 text-amber-950",
 };
 
 const ESTADO_LEGEND_BG = ESTADO_LEGEND_BG_VISITA;

@@ -6,6 +6,7 @@ export const ESTADOS_VISITA = [
   { value: "realizada", label: "Realizada" },
   { value: "cancelada", label: "Cancelada" },
   { value: "reprogramada", label: "Reprogramada" },
+  { value: "parcial", label: "Parcial" },
 ];
 
 export const ESTADO_LEGEND_BG_VISITA: Record<string, string> = {
@@ -13,4 +14,5 @@ export const ESTADO_LEGEND_BG_VISITA: Record<string, string> = {
   realizada: "bg-green-500",
   cancelada: "bg-red-400",
   reprogramada: "bg-orange-500",
+  parcial: "bg-amber-500",
 };

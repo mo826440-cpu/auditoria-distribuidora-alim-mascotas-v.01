@@ -137,6 +137,14 @@ Verás un mensaje similar a:
 - Verificá que hayas ejecutado todos los scripts de base de datos.
 - Revisá que el trigger de registro (script 08) esté creado para crear usuarios al registrarse.
 
+### Error 500 en "complete-registration" / No se ve la página Usuarios
+- La API que crea el comercio y el usuario en la tabla `usuarios` necesita **tres** variables en `.env.local`:
+  - `NEXT_PUBLIC_SUPABASE_URL`
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+  - `SUPABASE_SERVICE_ROLE_KEY`
+- Si falta alguna (sobre todo `NEXT_PUBLIC_SUPABASE_URL` o `SUPABASE_SERVICE_ROLE_KEY`), el registro "completo" falla y no se crea la fila en `usuarios`, por eso no se muestra la opción Usuarios.
+- **Después de agregar o modificar `.env.local`, tenés que reiniciar el servidor** (cerrá la terminal donde corre `npm run dev` y volvé a ejecutar `npm run dev`). Next.js solo lee las variables de entorno al iniciar.
+
 ### La página queda en blanco
 - Abrí la consola del navegador (F12) para ver errores.
 - Verificá que las variables `NEXT_PUBLIC_*` estén bien configuradas (se usan en el cliente).

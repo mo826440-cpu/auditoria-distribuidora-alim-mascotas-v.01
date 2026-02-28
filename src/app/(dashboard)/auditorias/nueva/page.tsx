@@ -55,7 +55,15 @@ export default async function AuditoriaNuevaPage({
   const transportistas = transportistasRes.data ?? [];
 
   const params = await searchParams;
-  const idAuditoria = params?.id ?? undefined;
+  let idAuditoria = params?.id ?? undefined;
+  if (!idAuditoria && params?.id_visita) {
+    const { data: auditByVisita } = await supabase
+      .from("registro_auditoria")
+      .select("id")
+      .eq("id_visita", params.id_visita)
+      .maybeSingle();
+    if (auditByVisita?.id) idAuditoria = auditByVisita.id;
+  }
   const desdeVisita = params?.id_cliente && params?.id_vendedor && params?.id_visita;
 
   return (

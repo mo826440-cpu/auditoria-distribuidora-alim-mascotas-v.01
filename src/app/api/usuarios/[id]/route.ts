@@ -73,6 +73,23 @@ export async function DELETE(
     return NextResponse.json({ error: "Sin permiso" }, { status: 403 });
   }
 
+  const { data: usuarioEliminar } = await supabase
+    .from("usuarios")
+    .select("rol")
+    .eq("id", id)
+    .single();
+
+  if (!usuarioEliminar) {
+    return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+  }
+
+  if (usuarioEliminar.rol === "administrador") {
+    return NextResponse.json(
+      { error: "No se puede eliminar un usuario con rol administrador" },
+      { status: 400 }
+    );
+  }
+
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceRoleKey) {
     return NextResponse.json(
@@ -88,10 +105,13 @@ export async function DELETE(
     { auth: { persistSession: false } }
   );
 
-  const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
+  const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(id);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+  if (deleteAuthError) {
+    return NextResponse.json(
+      { error: deleteAuthError.message || "Error al eliminar usuario" },
+      { status: 400 }
+    );
   }
 
   return NextResponse.json({ ok: true });

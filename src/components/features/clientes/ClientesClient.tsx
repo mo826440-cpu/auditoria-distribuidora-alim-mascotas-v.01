@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { PROVINCIAS_ARGENTINA } from "@/data/provinciasArgentina";
+import { LOCALIDADES_CORDOBA } from "@/data/localidadesCordoba";
 import { imprimirComoPdf, contenidoPdfCliente } from "@/lib/pdfUtils";
 
 type Zona = {
@@ -105,8 +106,14 @@ export function ClientesClient({
   const [clienteDetalle, setClienteDetalle] = useState<Cliente | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [modalTiposComercio, setModalTiposComercio] = useState(false);
+  const [modalZonas, setModalZonas] = useState(false);
+  const [modalVendedores, setModalVendedores] = useState(false);
+  const [modalTransportistas, setModalTransportistas] = useState(false);
   const [nuevoTipoNombre, setNuevoTipoNombre] = useState("");
+  const [nuevoZonaNombre, setNuevoZonaNombre] = useState("");
+  const [nuevoZonaLocalidades, setNuevoZonaLocalidades] = useState<string[]>([]);
   const [loadingTipos, setLoadingTipos] = useState(false);
+  const [loadingZonas, setLoadingZonas] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -233,6 +240,7 @@ export function ClientesClient({
           nombre: formNombre.trim(),
           cuit: formCuit.replace(/\s/g, ""),
           id_zona: formZona || undefined,
+          id_tipo_comercio: formTipoComercio || undefined,
           localidad: formLocalidad || undefined,
           provincia: formProvincia,
           calle: formCalle.trim(),
@@ -333,6 +341,57 @@ export function ClientesClient({
       setError(err instanceof Error ? err.message : "Error al eliminar tipo");
     } finally {
       setLoadingTipos(false);
+    }
+  }
+
+  const localidadesZonaEnUso = new Set(zonas.flatMap((z) => z.localidades || []));
+  function toggleNuevoZonaLocalidad(loc: string) {
+    setNuevoZonaLocalidades((prev) =>
+      prev.includes(loc) ? prev.filter((l) => l !== loc) : [...prev, loc]
+    );
+  }
+  function puedeSeleccionarLocalidadNueva(loc: string) {
+    return !localidadesZonaEnUso.has(loc) || nuevoZonaLocalidades.includes(loc);
+  }
+  async function handleAgregarZona() {
+    const nombre = nuevoZonaNombre.trim();
+    if (!nombre) return;
+    if (nuevoZonaLocalidades.length === 0) {
+      setError("Seleccioná al menos una localidad");
+      return;
+    }
+    setLoadingZonas(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/referencias/zonas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, localidades: nuevoZonaLocalidades }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al agregar");
+      setNuevoZonaNombre("");
+      setNuevoZonaLocalidades([]);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al agregar zona");
+    } finally {
+      setLoadingZonas(false);
+    }
+  }
+  async function handleEliminarZona(id: string) {
+    if (!confirm("¿Eliminar esta zona?")) return;
+    setLoadingZonas(true);
+    try {
+      const res = await fetch(`/api/referencias/zonas/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Error al eliminar");
+      if (formZona === id) setFormZona("");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error al eliminar zona");
+    } finally {
+      setLoadingZonas(false);
     }
   }
 
@@ -513,7 +572,27 @@ export function ClientesClient({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Zona *</label>
+        <div className="flex items-center gap-2">
+          <label className="block text-sm font-medium text-slate-300 mb-1 flex-1">Zona *</label>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => {
+                setNuevoZonaNombre("");
+                setNuevoZonaLocalidades([]);
+                setError(null);
+                setModalZonas(true);
+              }}
+              className="p-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg"
+              title="Agregar o eliminar opciones"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          )}
+        </div>
         <select
           ref={refZona}
           value={formZona}
@@ -601,7 +680,25 @@ export function ClientesClient({
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Vendedor frecuente *</label>
+        <div className="flex items-center gap-2">
+          <label className="block text-sm font-medium text-slate-300 mb-1 flex-1">Vendedor frecuente *</label>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setModalVendedores(true);
+              }}
+              className="p-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg"
+              title="Agregar o modificar opciones"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          )}
+        </div>
         <select
           value={formVendedor}
           onChange={(e) => setFormVendedor(e.target.value)}
@@ -621,7 +718,25 @@ export function ClientesClient({
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-300 mb-1">Transportista frecuente *</label>
+        <div className="flex items-center gap-2">
+          <label className="block text-sm font-medium text-slate-300 mb-1 flex-1">Transportista frecuente *</label>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setModalTransportistas(true);
+              }}
+              className="p-1.5 text-primary-400 hover:text-primary-300 hover:bg-primary-900/40 rounded-lg"
+              title="Agregar o modificar opciones"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          )}
+        </div>
         <select
           value={formTransportista}
           onChange={(e) => setFormTransportista(e.target.value)}
@@ -966,6 +1081,156 @@ export function ClientesClient({
                 onClick={() => {
                   setModalTiposComercio(false);
                   setError(null);
+                }}
+                className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalZonas && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-hidden flex flex-col border border-slate-700 shadow-xl">
+            <h2 className="text-lg font-semibold text-slate-200 mb-4">Gestionar zonas</h2>
+            {error && (
+              <div className="mb-3 p-2 rounded bg-red-900/50 text-red-300 text-sm">{error}</div>
+            )}
+            <div className="space-y-3 mb-4 flex-shrink-0">
+              <input
+                type="text"
+                value={nuevoZonaNombre}
+                onChange={(e) => setNuevoZonaNombre(e.target.value)}
+                placeholder="Nombre de zona (ej: Zona Norte)"
+                maxLength={100}
+                className="w-full px-3 py-2 border border-slate-600 rounded-lg bg-slate-800 text-slate-200 placeholder:text-slate-500 focus:ring-2 focus:ring-primary-500 outline-none"
+              />
+              <div className="max-h-36 overflow-y-auto border border-slate-600 rounded-lg p-2 space-y-1 bg-slate-800">
+                <p className="text-xs text-slate-400 mb-1">Localidades (al menos una)</p>
+                {LOCALIDADES_CORDOBA.map((loc) => {
+                  const disabled = !puedeSeleccionarLocalidadNueva(loc);
+                  const checked = nuevoZonaLocalidades.includes(loc);
+                  return (
+                    <label
+                      key={loc}
+                      className={`flex items-center gap-2 cursor-pointer text-sm ${disabled && !checked ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => !disabled && toggleNuevoZonaLocalidad(loc)}
+                        disabled={disabled && !checked}
+                        className="rounded border-slate-300 text-primary-600"
+                      />
+                      <span className="text-slate-200">{loc}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <button
+                type="button"
+                onClick={handleAgregarZona}
+                disabled={loadingZonas || !nuevoZonaNombre.trim() || nuevoZonaLocalidades.length === 0}
+                className="w-full px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg disabled:opacity-50"
+              >
+                {loadingZonas ? "Guardando..." : "Agregar zona"}
+              </button>
+            </div>
+            <ul className="space-y-2 overflow-y-auto flex-1 min-h-0 mb-4">
+              {zonas.map((z) => (
+                <li
+                  key={z.id}
+                  className="flex items-center justify-between py-2 px-3 bg-slate-800 rounded-lg flex-shrink-0"
+                >
+                  <span className="text-slate-200">{z.nombre}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleEliminarZona(z.id)}
+                    disabled={loadingZonas}
+                    className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-900/40 rounded"
+                    title="Eliminar"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {zonas.length === 0 && (
+              <p className="text-slate-400 text-sm mb-4">No hay zonas. Agregá una arriba.</p>
+            )}
+            <div className="flex justify-end flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setModalZonas(false);
+                  setError(null);
+                  router.refresh();
+                }}
+                className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalVendedores && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200 mb-2">Gestionar vendedores</h2>
+            <p className="text-slate-300 text-sm mb-4">
+              Los vendedores se gestionan en la página dedicada. Los cambios que hagas allí se verán en este listado y en la página Vendedores.
+            </p>
+            <div className="flex flex-wrap gap-2 justify-end">
+              <a
+                href="/vendedores"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium"
+              >
+                Abrir página Vendedores
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setModalVendedores(false);
+                  router.refresh();
+                }}
+                className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalTransportistas && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="bg-slate-850 rounded-xl p-6 w-full max-w-md shadow-xl border border-slate-700">
+            <h2 className="text-lg font-semibold text-slate-200 mb-2">Gestionar transportistas</h2>
+            <p className="text-slate-300 text-sm mb-4">
+              Los transportistas se gestionan en la página dedicada. Los cambios que hagas allí se verán en este listado y en la página Transportistas.
+            </p>
+            <div className="flex flex-wrap gap-2 justify-end">
+              <a
+                href="/transportistas"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-medium"
+              >
+                Abrir página Transportistas
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setModalTransportistas(false);
+                  router.refresh();
                 }}
                 className="px-4 py-2 text-slate-300 hover:bg-slate-700 rounded-lg"
               >

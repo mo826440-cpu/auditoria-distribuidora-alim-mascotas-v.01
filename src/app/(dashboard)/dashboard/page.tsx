@@ -15,7 +15,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-7xl">
-      <EnsureProfile />
       <h1 className="text-2xl font-bold text-[var(--foreground)]">Dashboard</h1>
       <p className="mt-2 text-slate-300">Bienvenido, {user.email}</p>
       <div className="mt-6">

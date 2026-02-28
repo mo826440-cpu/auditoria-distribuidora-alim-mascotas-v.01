@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { estrellasDesdePuntaje } from "@/data/evaluacionCriterios";
+import { estrellasDesdePuntajeSatisfaccion } from "@/data/encuestaSatisfaccionCriterios";
 
 type Cliente = { id: string; nombre: string; id_transportista_frecuente?: string | null; tipo_comercio_nombre?: string | null };
 type Vendedor = { id: string; nombre: string };
@@ -35,6 +36,8 @@ type Auditoria = {
   resultado_360?: string | null;
   puntaje_final?: number | null;
   clasificacion_cliente: string | null;
+  estado_auditoria?: string | null;
+  puntaje_satisfaccion?: number | null;
   condiciones_generales?: Record<string, unknown> | null;
   exhibicion_productos?: Record<string, unknown> | null;
   stock_rotacion?: Record<string, unknown> | null;
@@ -123,6 +126,9 @@ export function AuditoriasClient({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [filtroCliente, setFiltroCliente] = useState("");
+  const [filtroFecha, setFiltroFecha] = useState("");
+
   const [formCliente, setFormCliente] = useState("");
   const [formVendedor, setFormVendedor] = useState("");
   const [formVisita, setFormVisita] = useState("");
@@ -166,6 +172,15 @@ export function AuditoriasClient({
       if (v?.fecha_visita) setFormFecha(v.fecha_visita);
     }
   }, [formVisita, visitas]);
+
+  const auditoriasFiltradas = auditorias.filter((a) => {
+    if (filtroCliente && a.id_cliente !== filtroCliente) return false;
+    if (filtroFecha) {
+      const fechaAud = a.fecha.slice(0, 10);
+      if (fechaAud !== filtroFecha) return false;
+    }
+    return true;
+  });
 
   function abrirNuevo() {
     setFormCliente("");
@@ -468,6 +483,49 @@ export function AuditoriasClient({
 
   return (
     <div className="mt-6">
+      <div className="flex flex-wrap items-end gap-4 mb-4 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+        <div className="flex flex-col gap-1 min-w-[200px]">
+          <label htmlFor="filtro-cliente" className="text-xs font-medium text-slate-400">
+            Cliente
+          </label>
+          <select
+            id="filtro-cliente"
+            value={filtroCliente}
+            onChange={(e) => setFiltroCliente(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-slate-600 bg-slate-800 text-slate-200 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          >
+            <option value="">Todos los clientes</option>
+            {clientes.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="filtro-fecha" className="text-xs font-medium text-slate-400">
+            Fecha
+          </label>
+          <input
+            id="filtro-fecha"
+            type="date"
+            value={filtroFecha}
+            onChange={(e) => setFiltroFecha(e.target.value)}
+            className="px-3 py-2 rounded-lg border border-slate-600 bg-slate-800 text-slate-200 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          />
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setFiltroCliente("");
+            setFiltroFecha("");
+          }}
+          className="px-3 py-2 rounded-lg border border-slate-600 bg-slate-700 text-slate-300 hover:bg-slate-600 text-sm font-medium"
+        >
+          Limpiar filtros
+        </button>
+      </div>
+
       <div className="bg-slate-850 rounded-xl border border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -475,25 +533,29 @@ export function AuditoriasClient({
               <tr>
                 <th className="text-left py-3 px-4 font-semibold text-white">Fecha</th>
                 <th className="text-left py-3 px-4 font-semibold text-white">Cliente</th>
-                <th className="text-left py-3 px-4 font-semibold text-white">Clasificación</th>
+                <th className="text-left py-3 px-4 font-semibold text-white">Clasificación satisfacción</th>
+                <th className="text-left py-3 px-4 font-semibold text-white">Clasificación evaluación</th>
                 {canEdit && (
                   <th className="text-right py-3 px-4 font-semibold text-white">Acciones</th>
                 )}
               </tr>
             </thead>
             <tbody>
-              {auditorias.length === 0 ? (
+              {auditoriasFiltradas.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={canEdit ? 4 : 3}
+                    colSpan={canEdit ? 5 : 4}
                     className="py-8 px-4 text-center text-slate-400"
                   >
-                    No hay auditorías registradas. Creá una desde una visita programada.
+                    {auditorias.length === 0
+                      ? "No hay auditorías registradas. Creá una desde una visita programada."
+                      : "Ninguna auditoría coincide con los filtros. Probá con otros criterios."}
                   </td>
                 </tr>
               ) : (
-                auditorias.map((a) => {
-                  const estrellas = a.puntaje_final != null ? estrellasDesdePuntaje(a.puntaje_final) : (a.puntuacion_general_360 != null ? Math.round(Math.min(5, Math.max(1, Number(a.puntuacion_general_360)))) : 0);
+                auditoriasFiltradas.map((a) => {
+                  const estrellasEval = a.puntaje_final != null ? estrellasDesdePuntaje(a.puntaje_final) : (a.puntuacion_general_360 != null ? Math.round(Math.min(5, Math.max(1, Number(a.puntuacion_general_360)))) : 0);
+                  const estrellasSat = a.puntaje_satisfaccion != null ? estrellasDesdePuntajeSatisfaccion(a.puntaje_satisfaccion) : 0;
                   return (
                     <tr key={a.id} className="border-b border-slate-700 hover:bg-slate-700/50 bg-slate-800/50">
                       <td className="py-3 px-4 text-slate-300">
@@ -503,10 +565,25 @@ export function AuditoriasClient({
                         {(a.clientes as { nombre: string } | null)?.nombre ?? "—"}
                       </td>
                       <td className="py-3 px-4">
-                        {estrellas > 0 ? (
+                        {estrellasSat > 0 ? (
+                          <span className="flex items-center gap-0.5" title={a.puntaje_satisfaccion != null ? `${a.puntaje_satisfaccion} pts satisfacción` : undefined}>
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <svg key={i} className={`w-5 h-5 ${i <= estrellasSat ? "text-yellow-400" : "text-slate-600"}`} fill={i <= estrellasSat ? "currentColor" : "none"} stroke="currentColor" strokeWidth={i <= estrellasSat ? 0 : 1.5} viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                              </svg>
+                            ))}
+                          </span>
+                        ) : (
+                          <span className="text-slate-500">—</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        {a.estado_auditoria === "parcial" ? (
+                          <span className="text-amber-400 font-medium">Parcial</span>
+                        ) : estrellasEval > 0 ? (
                           <span className="flex items-center gap-0.5" title={a.puntaje_final != null ? `${a.puntaje_final} puntos` : undefined}>
                             {[1, 2, 3, 4, 5].map((i) => (
-                              <svg key={i} className={`w-5 h-5 ${i <= estrellas ? "text-yellow-400" : "text-slate-600"}`} fill={i <= estrellas ? "currentColor" : "none"} stroke="currentColor" strokeWidth={i <= estrellas ? 0 : 1.5} viewBox="0 0 24 24">
+                              <svg key={i} className={`w-5 h-5 ${i <= estrellasEval ? "text-yellow-400" : "text-slate-600"}`} fill={i <= estrellasEval ? "currentColor" : "none"} stroke="currentColor" strokeWidth={i <= estrellasEval ? 0 : 1.5} viewBox="0 0 24 24">
                                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                               </svg>
                             ))}

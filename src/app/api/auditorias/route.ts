@@ -139,19 +139,50 @@ export async function POST(request: Request) {
     insertBase.hora_fin = body.hora_fin ?? null;
     insertBase.analisis_final = body.analisis_final ?? null;
     insertBase.puntaje_final = body.puntaje_final ?? null;
+    if (Array.isArray(body.ponderaciones) && (body.ponderaciones.length === 5 || body.ponderaciones.length === 6)) {
+      insertBase.ponderaciones = body.ponderaciones;
+    }
+    insertBase.estado_auditoria = body.estado_auditoria === "parcial" ? "parcial" : "completa";
+    const CAMPOS_ENCUESTA = [
+      "encuesta_atencion_trato_amabilidad", "encuesta_atencion_tiempos_respuesta", "encuesta_atencion_claridad_info",
+      "encuesta_atencion_resolucion_problemas", "encuesta_atencion_frecuencia_contacto", "encuesta_atencion_percepcion_general",
+      "encuesta_entregas_tiempos", "encuesta_entregas_pedido_completo", "encuesta_entregas_estado_pedido",
+      "encuesta_entregas_facilidad_descarga", "encuesta_entregas_trato_transportista",
+      "encuesta_productos_calidad", "encuesta_productos_variedad", "encuesta_productos_disponibilidad_stock", "encuesta_productos_rotacion",
+      "encuesta_precios_competitividad", "encuesta_precios_promociones", "encuesta_precios_condiciones_pago", "encuesta_precios_relacion_calidad",
+      "encuesta_relacion_facilidad_pedidos", "encuesta_relacion_comunicacion", "encuesta_relacion_resolucion_reclamos",
+      "encuesta_relacion_satisfaccion_general", "encuesta_relacion_recomendacion",
+    ];
+    for (const key of CAMPOS_ENCUESTA) {
+      if (key in body && body[key] != null) {
+        const v = body[key];
+        insertBase[key] = typeof v === "number" && v >= 1 && v <= 3 ? v : null;
+      }
+    }
+    insertBase.puntaje_satisfaccion = typeof body.puntaje_satisfaccion === "number" && body.puntaje_satisfaccion >= 0 && body.puntaje_satisfaccion <= 72 ? body.puntaje_satisfaccion : null;
+    insertBase.analisis_encuesta_satisfaccion = body.analisis_encuesta_satisfaccion ?? null;
+    if (Array.isArray(body.ponderaciones_encuesta) && body.ponderaciones_encuesta.length === 5 && body.ponderaciones_encuesta.every((n: unknown) => typeof n === "number" && n >= 0 && n <= 100)) {
+      insertBase.ponderaciones_encuesta = body.ponderaciones_encuesta;
+    }
+    insertBase.pregunta_clave_mejorar = body.pregunta_clave_mejorar ?? null;
+    insertBase.pregunta_clave_productos_agregar = body.pregunta_clave_productos_agregar ?? null;
+    insertBase.pregunta_clave_problema_reciente = body.pregunta_clave_problema_reciente ?? null;
+    insertBase.pregunta_clave_otra_distribuidora = body.pregunta_clave_otra_distribuidora ?? null;
     const CAMPOS_EVALUACION = [
-      "eval_relacion_cumplimiento_pagos", "eval_relacion_formas_pago", "eval_relacion_frecuencia_compra",
-      "eval_relacion_comunicacion_ventas", "eval_relacion_trato_general",
-      "eval_ventas_volumen", "eval_ventas_rotacion", "eval_ventas_interes_nuevos",
-      "eval_logistica_facilidad_entrega", "eval_logistica_horarios_recepcion", "eval_logistica_espacio_descarga", "eval_logistica_organizacion_recibir",
-      "eval_local_exhibicion", "eval_local_orden_limpieza", "eval_local_iluminacion", "eval_local_espacio_disponible", "eval_local_ubicacion",
-      "eval_competencia_presencia", "eval_competencia_participacion",
-      "eval_potencial_crecimiento", "eval_potencial_cantidad_clientes", "eval_potencial_tamano_local",
+      "eval3_relacion_trato_vendedor", "eval3_relacion_trato_empresa", "eval3_relacion_comunicacion", "eval3_relacion_resolucion_problemas", "eval3_relacion_cumplimiento_pagos",
+      "eval3_ventas_frecuencia_compra", "eval3_ventas_volumen", "eval3_ventas_rotacion", "eval3_ventas_participacion_productos",
+      "eval3_logistica_recepcion_pedidos", "eval3_logistica_trato_transportista", "eval3_logistica_espacio_descarga", "eval3_logistica_organizacion_recibir",
+      "eval3_local_estado", "eval3_local_exhibicion", "eval3_local_espacio", "eval3_local_iluminacion",
+      "eval3_potencial_ubicacion", "eval3_potencial_cantidad_clientes", "eval3_potencial_crecimiento", "eval3_potencial_tamano_local", "eval3_potencial_presencia_competencia",
     ];
     for (const key of CAMPOS_EVALUACION) {
       if (key in body && body[key] != null) {
-        insertBase[key] = body[key];
+        const v = body[key];
+        insertBase[key] = typeof v === "number" && v >= 1 && v <= 3 ? v : null;
       }
+    }
+    if (Array.isArray(body.ponderaciones) && body.ponderaciones.length === 5) {
+      insertBase.ponderaciones = body.ponderaciones;
     }
 
     const { data, error } = await supabase
